@@ -8,7 +8,7 @@ namespace ECS_Test.Systems
 {
     public class MessageLog
     {
-        private static readonly int _maxLines = 9;
+        private static readonly int _maxLines = 13;
         private readonly Queue<string> _lines;
 
         public MessageLog()

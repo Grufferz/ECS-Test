@@ -58,6 +58,7 @@
     <Compile Include="Components\AttributesComp.cs" />
     <Compile Include="Components\Component.cs" />
     <Compile Include="Components\CreatureDetailsComp.cs" />
+    <Compile Include="Components\DoorComp.cs" />
     <Compile Include="Components\HealthComp.cs" />
     <Compile Include="Components\MagicComp.cs" />
     <Compile Include="Components\MonterStatsComp.cs" />
@@ -77,6 +78,7 @@
     <Compile Include="Core\DeleteEntEventArgs.cs" />
     <Compile Include="Core\Directions.cs" />
     <Compile Include="Core\DirectMoveEventArgs.cs" />
+    <Compile Include="Core\DoorHelper.cs" />
     <Compile Include="Core\DungeonMap.cs" />
     <Compile Include="Core\Entity.cs" />
     <Compile Include="Core\EntityFactory.cs" />

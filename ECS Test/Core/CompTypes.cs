@@ -19,6 +19,7 @@ namespace ECS_Test.Core
             Useable = 256,
             Value = 512,
             CreatureDetails = 1024,
-            Magic = 2048
+            Magic = 2048,
+            Door = 4096
         }
 }

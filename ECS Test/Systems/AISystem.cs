@@ -91,7 +91,7 @@ namespace ECS_Test.Systems
                                     aiComp.GotPath = targetFound;
 
                                     //aiComp.PathToTarget = null;
-                                    Game.MessageLog.Add($"Looking For Exit: Route Found = {targetFound.ToString()}");
+                                    //Game.MessageLog.Add($"Looking For Exit: Route Found = {targetFound.ToString()}");
 
                                     Core.NoMoveEventArgs nmEv = new Core.NoMoveEventArgs(Core.EventTypes.NoMove, msg.entRequestingMove);
                                     Core.EventBus.Publish(Core.EventTypes.NoMove, nmEv);
@@ -178,12 +178,19 @@ namespace ECS_Test.Systems
                     }
                 }
             }
-            catch (RogueSharp.PathNotFoundException eexc)
+            catch (RogueSharp.NoMoreStepsException eexc)
             {
-                Game.MessageLog.Add("You're breaking my heart...");
+                Game.MessageLog.Add("You're breaking my heart, no more steps...");
                 //aiC.PathToTarget = null;
-                bool targetFound = SetTargetToExit(entMoving);
-                aiC.GotPath = targetFound;
+                //bool targetFound = SetTargetToExit(entMoving);
+                //aiC.GotPath = targetFound;
+
+                aiC.AiState = Core.AIStates.Sleeping;
+                aiC.Target = new RogueSharp.Point(0,0);
+                aiC.PathToTarget = null;
+
+                Core.NoMoveEventArgs nmEv = new Core.NoMoveEventArgs(Core.EventTypes.NoMove, entMoving);
+                Core.EventBus.Publish(Core.EventTypes.NoMove, nmEv);
             }
         }
 
@@ -231,6 +238,8 @@ namespace ECS_Test.Systems
                 }
                 catch (RogueSharp.PathNotFoundException e)
                 {
+                    //TODO sort out this mess....
+
                     Game.MessageLog.Add("NO PATH Exception!");
                     return targetFound;
                 }
@@ -325,6 +334,7 @@ namespace ECS_Test.Systems
                 RogueSharp.Cell endCell = (RogueSharp.Cell)_dungeonMap.GetCell(targetPoint.X, targetPoint.Y);
                 RogueSharp.Cell startCell = (RogueSharp.Cell)_dungeonMap.GetCell(pc.X,pc.Y);
                 RogueSharp.PathFinder pF = new RogueSharp.PathFinder(_dungeonMap);
+
                 try
                 {
                     RogueSharp.Path pathToTarget = pF.ShortestPath(startCell, endCell);

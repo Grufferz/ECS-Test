@@ -9,10 +9,12 @@ namespace ECS_Test.Core
     class DungeonMap : RogueSharp.Map
     {
         public List<RogueSharp.Rectangle> Rooms;
+        public List<DoorHelper> Doors;
 
         public DungeonMap()
         {
             Rooms = new List<RogueSharp.Rectangle>();
+            Doors = new List<DoorHelper>();
         }
 
         public bool DoesRoomHaveWalkableSpace(RogueSharp.Rectangle room)
@@ -37,6 +39,11 @@ namespace ECS_Test.Core
             {
                 SetConsoleSymbolForCell(mapConsole, cell);
             }
+        }
+
+        public DoorHelper GetDoor(int x, int y)
+        {
+            return Doors.SingleOrDefault(d => d.X == x && d.Y == y);
         }
 
         public RogueSharp.Point GetRandomWalkableLocationInRoom( RogueSharp.Rectangle room )

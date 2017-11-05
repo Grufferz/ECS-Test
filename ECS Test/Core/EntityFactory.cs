@@ -9,6 +9,30 @@ namespace ECS_Test.Core
     class EntityFactory
     {
 
+        public static EntityReturner CreateDoor(int x, int y, bool isOpen)
+        {
+            List<Components.Component> compList = new List<Components.Component>();
+            
+            // set bitwise to 0
+            int checker = 0;
+
+            Components.PositionComp positionComp = new Components.PositionComp(x, y);
+            compList.Add(positionComp);
+            checker = checker | (int)Core.ComponentTypes.Position;
+
+            char c = isOpen ? '-' : '+';
+            Components.RenderComp rendComp = new Components.RenderComp(c, Colours.Door);
+            compList.Add(rendComp);
+            checker = checker | (int)Core.ComponentTypes.Render;
+
+            Components.DoorComp doorComp = new Components.DoorComp(isOpen, false);
+            compList.Add(doorComp);
+            checker = checker | (int)Core.ComponentTypes.Door;
+
+            EntityReturner er = new EntityReturner(checker, compList);
+            return er;
+        }
+
         public static EntityReturner CreateOrc(int xPos, int yPos, string name)
         {
             List<Components.Component> compList = new List<Components.Component>();
@@ -68,7 +92,7 @@ namespace ECS_Test.Core
             compList.Add(positionComp);
             checker = checker | (int)Core.ComponentTypes.Position;
 
-            Components.RenderComp rendComp = new Components.RenderComp('g', RLNET.RLColor.Yellow);
+            Components.RenderComp rendComp = new Components.RenderComp('$', RLNET.RLColor.Yellow);
             compList.Add(rendComp);
             checker = checker | (int)Core.ComponentTypes.Render;
 

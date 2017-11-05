@@ -10,6 +10,7 @@ namespace ECS_Test.Core
     {
         Exiting = 1,
         TreasureHunting = 2,
-        Sleeping = 3
+        Sleeping = 3,
+        Waiting = 4
     }
 }

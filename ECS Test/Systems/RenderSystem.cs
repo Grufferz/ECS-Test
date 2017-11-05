@@ -23,6 +23,7 @@ namespace ECS_Test.Systems
             int statBit = (int)Core.ComponentTypes.Health;
             int detailsBit = (int)Core.ComponentTypes.CreatureDetails;
             int yPos = 13;
+            int xPos = 2;
 
             Dictionary<int, int> ents = EntityManager.EntityBitLookUp;
 
@@ -69,22 +70,23 @@ namespace ECS_Test.Systems
                     
                     if (healthStat != null && detailsComp != null)
                     {
-                        statsConsole.Print(1, yPos, detailsComp.PersonalName + " the " + detailsComp.Name, c);
+                        statsConsole.Print(xPos, yPos, detailsComp.PersonalName + " the " + detailsComp.Name, c);
                         yPos++;
-                        statsConsole.Print(1, yPos, renderChar.ToString(), c);
+                        statsConsole.Print(xPos, yPos, renderChar.ToString(), c);
                         int width
                             = Convert.ToInt32(((double)healthStat.Health / (double)healthStat.MaxHealth) * 16);
                         int remainingWidth = 16 - width;
-                        statsConsole.SetBackColor(3, yPos, width, 1, Core.Swatch.Primary);
-                        statsConsole.SetBackColor(3 + width, yPos, remainingWidth, 1, Core.Swatch.PrimaryDarkest);
-                        statsConsole.Print(2, yPos, $": {healthStat.Health.ToString()}", Core.Swatch.DbLight);
+                        statsConsole.SetBackColor(xPos + 2, yPos, width, 1, Core.Swatch.Primary);
+                        statsConsole.SetBackColor(xPos + 2 + width, yPos, remainingWidth, 1, Core.Swatch.PrimaryDarkest);
+                        statsConsole.Print(xPos + 2, yPos, $": {healthStat.Health.ToString()}", Core.Swatch.DbLight);
+                        yPos = yPos + 2;
                     }
                 }
-                yPos = yPos + 2;
+               
             }
 
             // stats console
-            statsConsole.Print(1, 1, $"Max ID: {EntityManager.GetMaxIDNumber()}", Core.Colours.TextHeading);
+            statsConsole.Print(1, 1, $"Y=: {yPos.ToString()}", Core.Colours.TextHeading);
         }
     }
 }

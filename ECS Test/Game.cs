@@ -10,27 +10,27 @@ namespace ECS_Test
 
     class Game
     {
-        private static readonly int _screenWidth = 100;
-        private static readonly int _screenHeight = 70;
+        private static readonly int _screenWidth = 160;
+        private static readonly int _screenHeight = 90;
         private static RLRootConsole _rootConsole;
 
         //map console
-        private static readonly int _mapWidth = 80;
-        private static readonly int _mapHeight = 48;
+        private static readonly int _mapWidth = 130;
+        private static readonly int _mapHeight = 64;
         private static RLConsole _mapConsole;
 
         //message console
-        private static readonly int _messageWidth = 80;
-        private static readonly int _messageHeight = 11;
+        private static readonly int _messageWidth = 130;
+        private static readonly int _messageHeight = 15;
         private static RLConsole _messageConsole;
 
         //stat console
-        private static readonly int _statWidth = 20;
-        private static readonly int _statHeight = 70;
+        private static readonly int _statWidth = 36;
+        private static readonly int _statHeight = 75;
         private static RLConsole _statConsole;
 
         //inventory console
-        private static readonly int _inventoryWidth = 80;
+        private static readonly int _inventoryWidth = 130;
         private static readonly int _inventoryHeight = 11;
         private static RLConsole _inventoryConsole;
 
@@ -94,7 +94,7 @@ namespace ECS_Test
 
             //create map stuff
             Systems.MapGenerator mapGenerator = new Systems.MapGenerator(_mapWidth, 
-                _mapHeight, 20, 13, 7, _mapLevel, EntityManager);
+                _mapHeight, 25, 20, 7, _mapLevel, EntityManager);
             DungeonMap = mapGenerator.CreateMap();
             MovementSystem = new Systems.MovementSystem(DungeonMap, EntityManager);
 
@@ -110,6 +110,9 @@ namespace ECS_Test
 
             //create AI system
             AISystem = new Systems.AISystem(EntityManager, DungeonMap, GarbageSystem);
+
+            _inventoryConsole.SetBackColor(0, 0, _inventoryWidth, _inventoryHeight, Core.Swatch.DbWood);
+            _inventoryConsole.Print(1, 1, "Inventory", Core.Colours.TextHeading);
 
             _rootConsole.Update += OnRootConsoleUpdate;
             _rootConsole.Render += OnRootConsoleRender;

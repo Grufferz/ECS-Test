@@ -16,6 +16,7 @@ namespace ECS_Test.Components
         public int Dexterity { get; set; }
         public int Power { get; set; }
         public int Intelligence { get; set; }
+        public int Ideas { get; set; }
         public int Luck { get; set; }
         public int XP { get; set; }
         public int Sanity { get; set; }
@@ -34,11 +35,13 @@ namespace ECS_Test.Components
             Hardiness = RogueSharp.DiceNotation.Dice.Roll("3d6");
             Dexterity = RogueSharp.DiceNotation.Dice.Roll("3d6");
             Power = RogueSharp.DiceNotation.Dice.Roll("3d6");
-            Luck = RogueSharp.DiceNotation.Dice.Roll("3d6");
+            
             string intSt = intBase.ToString() + "d6";
             Intelligence = RogueSharp.DiceNotation.Dice.Roll(intSt);
 
+            Ideas = Intelligence * 5;
             Sanity = Power * 5;
+            Luck = Power * 5;
 
             int dmgSw = Strength + Size;
 
@@ -82,7 +85,7 @@ namespace ECS_Test.Components
                 DmgBonus = "4d6";
                 DmgMod = 1;
             }
-            else
+            else if (dmgSw > 88)
             {
                 DmgBonus = "5d6";
                 DmgMod = 1;

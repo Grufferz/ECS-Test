@@ -74,8 +74,74 @@ namespace ECS_Test.Systems
                 }
             }
 
+            foreach(RogueSharp.Rectangle room in _map.Rooms)
+            {
+                CreateDoors(room);
+            }
+
             CreateStairs();
             return _map;
+        }
+
+        private void CreateDoors( RogueSharp.Rectangle room )
+        {
+            int xMin = room.Left;
+            int xMax = room.Right;
+            int yMin = room.Top;
+            int yMax = room.Bottom;
+
+            List<RogueSharp.ICell> borderCells 
+                = _map.GetCellsAlongLine(xMin, yMin, xMax, yMin).ToList();
+            borderCells.AddRange(_map.GetCellsAlongLine(xMin, yMin, xMin, yMax));
+            borderCells.AddRange(_map.GetCellsAlongLine(xMin, yMax, xMax, yMax));
+            borderCells.AddRange(_map.GetCellsAlongLine(xMax, yMin, xMax, yMax));
+
+            foreach( RogueSharp.ICell c in borderCells )
+            {
+                if (IsPotentialDoor(c))
+                {
+                    _map.SetCellProperties(c.X, c.Y, false, true);
+                    _map.Doors.Add(new Core.DoorHelper(c.X, c.Y, false));
+
+                    // create door entity - needs pos, render, door
+                    _entManager.AddDoor(c.X, c.Y, false);
+                }
+            }
+        }
+
+        public bool IsPotentialDoor(RogueSharp.ICell cell)
+        {
+           
+            if (!cell.IsWalkable)
+            {
+                return false;
+            }
+
+            // get refs to all surrouding cells
+            RogueSharp.ICell right = _map.GetCell(cell.X + 1, cell.Y);
+            RogueSharp.ICell left = _map.GetCell(cell.X - 1, cell.Y);
+            RogueSharp.ICell top = _map.GetCell(cell.X, cell.Y - 1);
+            RogueSharp.ICell bottom = _map.GetCell(cell.X, cell.Y + 1);
+            
+            //make sure no doors here
+            if (_map.GetDoor(cell.X, cell.Y) != null ||
+                _map.GetDoor(right.X, right.Y) != null ||
+                _map.GetDoor(left.X, left.Y) != null ||
+                _map.GetDoor(top.X, top.Y) != null ||
+                _map.GetDoor(bottom.X, bottom.Y) != null )
+            {
+                return false;
+            }
+            
+            if (right.IsWalkable && left.IsWalkable && !top.IsWalkable && !bottom.IsWalkable)
+            {
+                return true;
+            }
+            if (!right.IsWalkable && !left.IsWalkable && top.IsWalkable && bottom.IsWalkable)
+            {
+                return true;
+            }
+            return false;
         }
 
         public void PlaceGold(EntityManager em)

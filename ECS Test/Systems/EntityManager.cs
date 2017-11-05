@@ -69,6 +69,24 @@ namespace ECS_Test.Systems
             _entityID++;
         }
 
+        public void AddDoor(int x, int y, bool isOpen)
+        {
+            var e = new Core.Entity(_entityID);
+
+            Core.EntityReturner er = Core.EntityFactory.CreateDoor(x, y, isOpen);
+
+            //add entity to entity dict
+            Entities.Add(_entityID, er.ComponentList);
+            EntityBitLookUp.Add(_entityID, er.LookUpBit);
+            JustEntities.Add(_entityID, e);
+
+            //add to PositionLookUp
+            AddEntToPosition(x, y, e);
+
+            // inc entityID
+            _entityID++;
+        }
+
         public void AddStairs(int x, int y, bool isUp)
         {
             var e = new Core.Entity(_entityID);

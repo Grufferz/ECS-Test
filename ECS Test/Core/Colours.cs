@@ -19,6 +19,12 @@ namespace ECS_Test.Core
         public static RLColor WallBackgroundFov = Swatch.SecondaryDarker;
         public static RLColor WallFov = Swatch.SecondaryLighter;
 
+        public static RLColor DoorBackground = Swatch.CompilmentDarkest;
+        public static RLColor Door = Swatch.CompilmentLighter;
+        public static RLColor DoorBackgroundFov = Swatch.CompilmenteDarker;
+        public static RLColor DoorFov = Swatch.CompilmentLightest;
+
+
         public static RLColor TextHeading = Swatch.DbLight;
 
         public static RLColor Player = Swatch.DbLight;
