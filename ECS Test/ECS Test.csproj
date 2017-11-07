@@ -56,10 +56,12 @@
   <ItemGroup>
     <Compile Include="Components\AIComp.cs" />
     <Compile Include="Components\AttributesComp.cs" />
+    <Compile Include="Components\CollectableComp.cs" />
     <Compile Include="Components\Component.cs" />
     <Compile Include="Components\CreatureDetailsComp.cs" />
     <Compile Include="Components\DoorComp.cs" />
     <Compile Include="Components\HealthComp.cs" />
+    <Compile Include="Components\InventoryComp.cs" />
     <Compile Include="Components\MagicComp.cs" />
     <Compile Include="Components\MonterStatsComp.cs" />
     <Compile Include="Components\PositionComp.cs" />
@@ -69,12 +71,11 @@
     <Compile Include="Components\UseableComp.cs" />
     <Compile Include="Components\ValueComp.cs" />
     <Compile Include="Core\AIReqEventArgs.cs" />
-    <Compile Include="Core\AIStates.cs" />
+    <Compile Include="Types\AIStates.cs" />
     <Compile Include="Core\Bresenhams.cs" />
     <Compile Include="Core\CollisionEventArgs.cs" />
     <Compile Include="Core\Colours.cs" />
-    <Compile Include="Core\CompTypes.cs" />
-    <Compile Include="Core\CreatureTypes.cs" />
+    <Compile Include="Types\CompTypes.cs" />
     <Compile Include="Core\DeleteEntEventArgs.cs" />
     <Compile Include="Core\Directions.cs" />
     <Compile Include="Core\DirectMoveEventArgs.cs" />
@@ -84,7 +85,7 @@
     <Compile Include="Core\EntityFactory.cs" />
     <Compile Include="Core\EntityReturner.cs" />
     <Compile Include="Core\EventBus.cs" />
-    <Compile Include="Core\EventTypes.cs" />
+    <Compile Include="Types\EventTypes.cs" />
     <Compile Include="Core\GameCriticalEventArgs.cs" />
     <Compile Include="Core\GameEvents.cs" />
     <Compile Include="Core\GameSaveInfo.cs" />
@@ -114,6 +115,8 @@
     <Compile Include="Systems\StatsSystem.cs" />
     <Compile Include="Systems\SystemManager.cs" />
     <Compile Include="Systems\UseSystem.cs" />
+    <Compile Include="Types\CreatureTypes.cs" />
+    <Compile Include="Types\ItemTypes.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

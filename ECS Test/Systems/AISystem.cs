@@ -46,6 +46,23 @@ namespace ECS_Test.Systems
                     //directionToMove = Core.Directions.None;
                     int turnsSinceMove = aiComp.TurnsSinceMove;
 
+
+                    // are we standing on anything?
+                    bool standing = false;
+                    string posKey = posComp.X.ToString() + "-" + posComp.Y.ToString();
+                    if (_em.EntityPostionLookUp.ContainsKey(posKey))
+                    {
+                        foreach (Core.Entity entOnPos in _em.EntityPostionLookUp[posKey])
+                        {
+                            if (_em.CheckEntForBits(entOnPos.UID, (int)Core.ComponentTypes.Collectable))
+                            {
+
+                            }
+
+                        }
+                    }
+
+
                     // are we sleeping?
                     if (aiComp.AiState == Core.AIStates.Sleeping)
                     {

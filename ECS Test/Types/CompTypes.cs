@@ -20,6 +20,8 @@ namespace ECS_Test.Core
             Value = 512,
             CreatureDetails = 1024,
             Magic = 2048,
-            Door = 4096
-        }
+            Door = 4096,
+            Collectable = 8192,
+            Inventory = 16384
+    }
 }

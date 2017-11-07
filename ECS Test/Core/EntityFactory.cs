@@ -72,8 +72,12 @@ namespace ECS_Test.Core
             compList.Add(shedComp);
             checker = checker | (int)Core.ComponentTypes.Schedulable;
 
+            Components.InventoryComp invComp = new Components.InventoryComp();
+            compList.Add(invComp);
+            checker = checker | (int)Core.ComponentTypes.Inventory;
+
             Components.CreatureDetailsComp detailsComp
-                = new Components.CreatureDetailsComp("Orc", name, CreatureTypes.Orc);
+                = new Components.CreatureDetailsComp("Orc", name, Types.CreatureTypes.Orc);
             compList.Add(detailsComp);
             checker = checker | (int)ComponentTypes.CreatureDetails;
 
@@ -99,6 +103,11 @@ namespace ECS_Test.Core
             Components.ValueComp valComp = new Components.ValueComp(RogueSharp.DiceNotation.Dice.Roll("1d6"));
             compList.Add(valComp);
             checker = checker | (int)Core.ComponentTypes.Value;
+
+            Components.CollectableComp collComp 
+                = new Components.CollectableComp(1, true, true, Types.ItemTypes.Treasure);
+            compList.Add(collComp);
+            checker = checker | (int)Core.ComponentTypes.Collectable;
 
             EntityReturner er = new EntityReturner(checker, compList);
             return er;
@@ -144,8 +153,12 @@ namespace ECS_Test.Core
             compList.Add(shedComp);
             checker = checker | (int)Core.ComponentTypes.Schedulable;
 
+            Components.InventoryComp invComp = new Components.InventoryComp();
+            compList.Add(invComp);
+            checker = checker | (int)Core.ComponentTypes.Inventory;
+
             Components.CreatureDetailsComp detailsComp
-                = new Components.CreatureDetailsComp("Koblod", name, CreatureTypes.Kobold);
+                = new Components.CreatureDetailsComp("Koblod", name, Types.CreatureTypes.Kobold);
             compList.Add(detailsComp);
             checker = checker | (int)ComponentTypes.CreatureDetails;
 

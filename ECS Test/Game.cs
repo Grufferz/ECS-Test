@@ -16,7 +16,7 @@ namespace ECS_Test
 
         //map console
         private static readonly int _mapWidth = 130;
-        private static readonly int _mapHeight = 64;
+        private static readonly int _mapHeight = 60;
         private static RLConsole _mapConsole;
 
         //message console
@@ -31,7 +31,7 @@ namespace ECS_Test
 
         //inventory console
         private static readonly int _inventoryWidth = 130;
-        private static readonly int _inventoryHeight = 11;
+        private static readonly int _inventoryHeight = 15;
         private static RLConsole _inventoryConsole;
 
         public static Systems.MessageLog MessageLog;
@@ -150,28 +150,6 @@ namespace ECS_Test
                 Core.EventBus.Publish(Core.EventTypes.KeyPressed, args);
             }
 
-
-
-            //    if ( keyPress.Key == RLKey.Up)
-            //    {
-            //        didPlayerAct = true;
-            //    }
-            //    else if ( keyPress.Key == RLKey.Down)
-            //    {
-            //        didPlayerAct = true;
-            //    }
-            //    else if (keyPress.Key == RLKey.Left)
-            //    {
-            //        didPlayerAct = true;
-            //    }
-            //    else if (keyPress.Key == RLKey.Right)
-            //    {
-            //        didPlayerAct = true;
-            //    }
-            //    else if (keyPress.Key == RLKey.Escape)
-            //    {
-            //        _rootConsole.Close();
-            //    }
             //    else if (keyPress.Key == RLKey.Space)
             //    {
             //        //SAVE GAME

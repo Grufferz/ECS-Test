@@ -65,6 +65,10 @@ namespace ECS_Test.Systems
                             }
                         }
                     }
+                    else
+                    {
+                        // non position based, use inventory
+                    }
                     break;
             }
         }

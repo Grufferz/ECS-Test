@@ -34,8 +34,9 @@ namespace ECS_Test.Systems
         {
             Core.Entity e = new Core.Entity(_entityID);
             Core.EntityReturner er;
-            
-            int ind = r.Next(CreatNames.Count);
+
+            //int ind = r.Next(CreatNames.Count);
+            int ind = Game.Random.Next(CreatNames.Count - 1);
             string creatureName = CreatNames[ind];
 
 
@@ -122,6 +123,25 @@ namespace ECS_Test.Systems
 
             // inc entityID
             _entityID++;
+        }
+
+        public bool CheckEntForBits(int eID, int checkBit)
+        {
+            if (EntityBitLookUp.TryGetValue(eID, out int cb))
+            {
+                if ((checkBit & cb) > 0)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
         }
 
         public void ClearEntities()

@@ -22,7 +22,7 @@ namespace ECS_Test.Systems
             var rendBit = (int)Core.ComponentTypes.Render;
             int statBit = (int)Core.ComponentTypes.Health;
             int detailsBit = (int)Core.ComponentTypes.CreatureDetails;
-            int yPos = 13;
+            int yPos = 16;
             int xPos = 2;
 
             Dictionary<int, int> ents = EntityManager.EntityBitLookUp;
