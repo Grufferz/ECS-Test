@@ -63,6 +63,10 @@ namespace ECS_Test.Core
             compList.Add(healthComp);
             checker = checker | (int)Core.ComponentTypes.Health;
 
+            Components.ActorComp actComp = new Components.ActorComp();
+            compList.Add(actComp);
+            checker = checker | (int)Core.ComponentTypes.Actor;
+
             Components.AIComp aiComp = new Components.AIComp();
             compList.Add(aiComp);
             checker = checker | (int)Core.ComponentTypes.AI;
@@ -100,9 +104,11 @@ namespace ECS_Test.Core
             compList.Add(rendComp);
             checker = checker | (int)Core.ComponentTypes.Render;
 
-            Components.ValueComp valComp = new Components.ValueComp(RogueSharp.DiceNotation.Dice.Roll("1d6"));
+            Components.ItemValueComp valComp = new Components.ItemValueComp(RogueSharp.DiceNotation.Dice.Roll("1d6"));
             compList.Add(valComp);
-            checker = checker | (int)Core.ComponentTypes.Value;
+            checker = checker | (int)Core.ComponentTypes.ItemValue;
+
+            Game.MessageLog.Add($"V={valComp.ItemValue.ToString()}");
 
             Components.CollectableComp collComp 
                 = new Components.CollectableComp(1, true, true, Types.ItemTypes.Treasure);
@@ -143,6 +149,10 @@ namespace ECS_Test.Core
             Components.HealthComp healthComp = new Components.HealthComp(hp);
             compList.Add(healthComp);
             checker = checker | (int)Core.ComponentTypes.Health;
+
+            Components.ActorComp actComp = new Components.ActorComp();
+            compList.Add(actComp);
+            checker = checker | (int)Core.ComponentTypes.Actor;
 
             Components.AIComp aiComp = new Components.AIComp();
             compList.Add(aiComp);

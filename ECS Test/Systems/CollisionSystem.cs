@@ -31,11 +31,14 @@ namespace ECS_Test.Systems
                     //check entity manager lookup dict
                     string posKey = details.x.ToString() + "-" + details.y.ToString();
                     bool collision = false;
+                    List<int> deathList = new List<int>();
+
                     if (_entityManager.EntityPostionLookUp.ContainsKey(posKey))
                     {
                         // we have something there...
 
                         List<Core.Entity> entL = _entityManager.EntityPostionLookUp[posKey];
+                        
 
                         foreach(Core.Entity entities in entL)
                         {
@@ -47,32 +50,51 @@ namespace ECS_Test.Systems
                                 // get entity we are colliding with
                                 int entBit = _entityManager.EntityBitLookUp[entities.UID];
                                 
+                                // do they have a health component?
                                 if ((entBit & (int)Core.ComponentTypes.Health) > 0)
                                 {
-                                    //FIGHT - do nothing
-                                    Game.MessageLog.Add("FIGHT NOW");
+                                    //Game.MessageLog.Add("FIGHT NOW");
                                     collision = true;
-                                    // TODO fight this monster....
-                                }
-                                else if ((entBit & (int)Core.ComponentTypes.Collectable)> 0)
-                                {
-                                    // TODO pick up item
-
-                                    // are we AI?
-                                    if (_entityManager.CheckEntForBits(details.EntRequestingMove.UID, 
-                                        (int)Core.ComponentTypes.AI))
+                                    // TODO more elaborate combat system....
+                                    Components.HealthComp hComp =
+                                        (Components.HealthComp)entComps.FirstOrDefault(x => x.CompType == Core.ComponentTypes.Health);
+                                    hComp.Health -= 1;
+                                    if (hComp.Health < 0)
                                     {
-                                        // AI running
-                                        Game.MessageLog.Add("OVER ITEM!");
+                                        hComp.Health = 0;
+                                    }
+                                    Components.AIComp aiComp = 
+                                        (Components.AIComp)entComps.FirstOrDefault(x => x.CompType == Core.ComponentTypes.AI);
+                                    aiComp.UnderAttack = true;
+                                    aiComp.LastBasher = details.EntRequestingMove.UID;
+                                    if (!aiComp.CurrentEnemies.Contains(details.EntRequestingMove.UID))
+                                    {
+                                        aiComp.CurrentEnemies.Add(details.EntRequestingMove.UID);
+                                    }
+                                    Components.CreatureDetailsComp cdComp =
+                                        (Components.CreatureDetailsComp)entComps.FirstOrDefault(x => x.CompType == Core.ComponentTypes.CreatureDetails);
+                                    List<Components.Component> ourList = _entityManager.GetCompsByID(details.EntRequestingMove.UID);
+                                    Components.CreatureDetailsComp ourComp = 
+                                        (Components.CreatureDetailsComp)ourList.FirstOrDefault(x => x.CompType == Core.ComponentTypes.CreatureDetails);
+                                    Game.MessageLog.Add($"{ourComp.PersonalName} Bashes {cdComp.PersonalName} from 3 Damage");
 
-                                        // can we pick it up?
+                                    if (hComp.Health < 1)
+                                    {
+                                        // entity is dead, collect up and kill at end
+                                        deathList.Add(entities.UID);
                                         
                                     }
                                 }
                             }
                         }
-
                     }
+
+                    foreach (int i in deathList)
+                    {
+                        Core.DeleteEntEventArgs msg = new Core.DeleteEntEventArgs(Core.EventTypes.DeleteEntity, i);
+                        Core.EventBus.Publish(Core.EventTypes.DeleteEntity, msg);
+                    }
+
                     if (!collision)
                     { 
                         // move okay
@@ -82,6 +104,9 @@ namespace ECS_Test.Systems
                     else
                     {
                         // fight on
+                        Core.NoMoveEventArgs msg 
+                            = new Core.NoMoveEventArgs(Core.EventTypes.NoMove, details.EntRequestingMove);
+                        Core.EventBus.Publish(Core.EventTypes.NoMove, msg);
 
                     }
                     break;

@@ -6,13 +6,8 @@ using System.Threading.Tasks;
 
 namespace ECS_Test.Components
 {
-    class ValueComp : Component
+    class ActorComp : Component
     {
-        public int Value;
-
-        public ValueComp(int v)
-        {
-            Value = v;
-        }
+        public bool IsActor = true;
     }
 }

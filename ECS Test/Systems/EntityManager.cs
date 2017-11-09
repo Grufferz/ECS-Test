@@ -114,12 +114,17 @@ namespace ECS_Test.Systems
 
             Core.EntityReturner er = Core.EntityFactory.CreateGold(x, y);
 
-            //add entity to entity dict
+            
+
+            //add entity to entity dic
             Entities.Add(_entityID, er.ComponentList);
             EntityBitLookUp.Add(_entityID, er.LookUpBit);
             JustEntities.Add(_entityID, e);
 
             AddEntToPosition(x, y, e);
+
+            bool check = CheckEntForBits(_entityID, (int)Core.ComponentTypes.ItemValue);
+            Game.MessageLog.Add($"has value comp = {check.ToString()}");
 
             // inc entityID
             _entityID++;
@@ -272,11 +277,12 @@ namespace ECS_Test.Systems
                     {
                         List<Core.Entity> entList = EntityPostionLookUp[lu];
                         entList.RemoveAll(x => x.UID == eid);
-                        if (entList.Count == 0)
-                        {
-                            EntityPostionLookUp.Remove(lu);
-                        }
+                        //if (entList.Count == 0)
+                        //{
+                        //    EntityPostionLookUp.Remove(lu);
+                        //}
                     }
+                    
                 }
                 JustEntities.Remove(eid);
                 Entities.Remove(eid);
@@ -302,15 +308,15 @@ namespace ECS_Test.Systems
             {
                 List<Core.Entity> l = EntityPostionLookUp[dictKey];
                 l.Remove(ent);
-                if (l.Count == 0)
-                {
-                    deleteMe = true;
-                }
+                //if (l.Count == 0)
+                //{
+                 //   deleteMe = true;
+                //}
             }
-            if (deleteMe)
-            {
-                EntityPostionLookUp.Remove(dictKey);
-            }
+            //if (deleteMe)
+            //{
+             //   EntityPostionLookUp.Remove(dictKey);
+            //}
         }
 
         public void SaveGame(RogueSharp.Map dm, int mapLevel, int randomSeed)

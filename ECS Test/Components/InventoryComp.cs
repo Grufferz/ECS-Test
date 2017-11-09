@@ -9,12 +9,16 @@ namespace ECS_Test.Components
     class InventoryComp : Component
     {
         public List<int> Inventory;
+        public List<int> Treasure;
+        public int ValueCarried;
 
         public InventoryComp()
         {
             CompType = Core.ComponentTypes.Inventory;
+            ValueCarried = 0;
 
             Inventory = new List<int>();
+            Treasure = new List<int>();
 
         }
     }

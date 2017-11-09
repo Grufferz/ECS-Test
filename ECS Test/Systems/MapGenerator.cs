@@ -150,7 +150,7 @@ namespace ECS_Test.Systems
             {
                 if (RogueSharp.DiceNotation.Dice.Roll("1d10") < 7)
                 {
-                    int amountOfGold = RogueSharp.DiceNotation.Dice.Roll("1d4");
+                    int amountOfGold = RogueSharp.DiceNotation.Dice.Roll("1d8");
                     for (int i = 0; i < amountOfGold; i++)
                     {
                         RogueSharp.Point randRoomLoc = _map.GetRandomWalkableLocationInRoom(room);

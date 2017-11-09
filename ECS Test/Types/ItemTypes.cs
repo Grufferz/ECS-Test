@@ -12,6 +12,7 @@ namespace ECS_Test.Types
         Weapon = 2,
         Armour = 4,
         Treasure = 8,
-        Misc = 16
+        Misc = 16,
+        Food = 32
     }
 }

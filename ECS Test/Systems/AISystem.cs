@@ -12,7 +12,6 @@ namespace ECS_Test.Systems
         private GarbageSystem _garbageSystem;
         private Random rdm;
         private Core.DungeonMap _dungeonMap;
-        private RogueSharp.PathFinder pFinder;
 
         public AISystem(EntityManager em, Core.DungeonMap dm, GarbageSystem gs)
         {
@@ -36,6 +35,8 @@ namespace ECS_Test.Systems
                 case Core.EventTypes.AIRequest:
                     Core.AIReqMessageEventArgs msg = (Core.AIReqMessageEventArgs)e;
 
+                    Core.Entity ent = msg.entRequestingMove;
+
                     List<Components.Component> curEntCompList = _em.GetCompsByID(msg.entRequestingMove.UID);
                     Components.AIComp aiComp
                         = (Components.AIComp)curEntCompList.FirstOrDefault(x => x.CompType == Core.ComponentTypes.AI);
@@ -44,91 +45,201 @@ namespace ECS_Test.Systems
 
                     //Core.Directions directionToMove;
                     //directionToMove = Core.Directions.None;
-                    int turnsSinceMove = aiComp.TurnsSinceMove;
+                    //int turnsSinceMove = aiComp.TurnsSinceMove;
 
+                    // are we under attack
+                    bool underAttack = aiComp.UnderAttack;
 
                     // are we standing on anything?
-                    bool standing = false;
-                    string posKey = posComp.X.ToString() + "-" + posComp.Y.ToString();
-                    if (_em.EntityPostionLookUp.ContainsKey(posKey))
+                    bool standing = AreWeStandingOnSomething(posComp);
+                    bool objPickedUp = false;
+
+                    // do we have a path
+                    bool gotPath = aiComp.GotPath;
+
+                    // are we asleep
+                    //bool sleeping = (aiComp.AiState == Core.AIStates.Sleeping);
+
+                    if (aiComp.Fleeing)
                     {
-                        foreach (Core.Entity entOnPos in _em.EntityPostionLookUp[posKey])
-                        {
-                            if (_em.CheckEntForBits(entOnPos.UID, (int)Core.ComponentTypes.Collectable))
-                            {
-
-                            }
-
-                        }
-                    }
-
-
-                    // are we sleeping?
-                    if (aiComp.AiState == Core.AIStates.Sleeping)
-                    {
-                        // chance of walking up?
-
-                        if (RogueSharp.DiceNotation.Dice.Roll("1d10") > 3)
-                        {
-                            aiComp.AiState = Core.AIStates.Exiting;
-                        }
-
-                        Core.NoMoveEventArgs nmEv = new Core.NoMoveEventArgs(Core.EventTypes.NoMove, msg.entRequestingMove);
-                        Core.EventBus.Publish(Core.EventTypes.NoMove, nmEv);
+                        // run away!  Evaluate then either flee or stop fleeing
+                        Game.MessageLog.Add("WE are fleeing!");
                     }
                     else
                     {
-                        // have we got a target?
-                        if (aiComp.GotPath)
+                        if (underAttack)
                         {
-                            //start following path
-                            FollowPath(aiComp, posComp, msg.entRequestingMove);
+                            // under attack, fight or flee
+                            Game.MessageLog.Add($"We are under attack captain from {aiComp.LastBasher.ToString()}");
+                            bool enemyFound = false;
+                            int xp = 0;
+                            int yp = 0;
+
+                            IEnumerable<RogueSharp.ICell> surroundingCells = _dungeonMap.GetBorderCellsInSquare(posComp.X, posComp.Y, 1);
+                            foreach(RogueSharp.ICell cell in surroundingCells)
+                            {
+                                string lookUp = cell.X.ToString() + "-" + cell.Y.ToString();
+                                if (_em.EntityPostionLookUp.ContainsKey(lookUp))
+                                {
+                                    List<Core.Entity> luList = _em.EntityPostionLookUp[lookUp];
+                                    foreach(Core.Entity entInLu in luList)
+                                    {
+                                        if (entInLu.UID == aiComp.LastBasher)
+                                        {
+                                            enemyFound = true;
+                                            xp = cell.X;
+                                            yp = cell.Y;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (enemyFound)
+                            {
+                                Game.MessageLog.Add("Going for the kill!");
+                                RogueSharp.Point nm = new RogueSharp.Point(xp, yp);
+                                Core.DirectMoveEventArgs moveReq
+                                    = new Core.DirectMoveEventArgs(Core.EventTypes.DirectMove, ent, nm);
+                                Core.EventBus.Publish(Core.EventTypes.ActionReqMove, moveReq);
+                            }
+
                         }
                         else
                         {
-                            // are we at target?
-                            if (AtTarget(aiComp, posComp))
+                            if (standing)
                             {
-                                //TODO - Do something when you get to target
-                                Game.MessageLog.Add("AT TARGET!!!!!!");
-                                // remove ent from map
-                                _dungeonMap.SetCellProperties(posComp.X, posComp.Y, false, true);
-                                // delete entity
-                                Core.DeleteEntEventArgs deleteEv = new Core.DeleteEntEventArgs(Core.EventTypes.DeleteEntity, msg.entRequestingMove.UID);
-                                Core.EventBus.Publish(Core.EventTypes.DeleteEntity, deleteEv);
+                                // standing on something, pick it up?
+                                Game.MessageLog.Add("we are standing on something or other");
+                                // have we seen it before
+
+                                
+                                List<int> objsOfInterest = new List<int>();
+                                string posKey = posComp.X.ToString() + "-" + posComp.Y.ToString();
+
+                                if (_em.EntityPostionLookUp.ContainsKey(posKey))
+                                {
+                                    foreach (Core.Entity entOnPos in _em.EntityPostionLookUp[posKey])
+                                    {
+                                        if (_em.CheckEntForBits(entOnPos.UID, (int)Core.ComponentTypes.Collectable))
+                                        {
+                                            if (aiComp.ItemsAlreadySeen.Contains(entOnPos.UID))
+                                            {
+                                                Game.MessageLog.Add("SEEN THIS ITEM BEFORE");
+                                               // objsOfInterest.Add(entOnPos.UID);
+                                            }
+                                            else
+                                            {
+                                                // we've not seen this before.  Pick up?
+                                                if (entOnPos.UID != ent.UID)
+                                                {
+
+                                                    aiComp.ItemsAlreadySeen.Add(entOnPos.UID);
+                                                    objsOfInterest.Add(entOnPos.UID);
+                                                }
+
+                                            }
+                                        }
+                                    }
+                                }
+
+                                if (objsOfInterest.Count > 0)
+                                {
+                                    // we have interesting objects, do something
+                                    
+                                    objPickedUp = true;
+
+                                    //int objToPick = rdm.Next(objsOfInterest.Count);
+                                    int ei = objsOfInterest[0];
+                                    // Game.MessageLog.Add($"trying to pick up count = {objsOfInterest.Count.ToString()}");
+                                    Core.Entity pickedUpEnt = _em.JustEntities[ei];
+                                    Game.MessageLog.Add($"i {ent.UID.ToString()} want to pick something up: {pickedUpEnt.UID.ToString()}");
+                                    bool treaure = _em.CheckEntForBits(pickedUpEnt.UID, (int)Core.ComponentTypes.ItemValue);
+                                    Game.MessageLog.Add($"treasure has valuecomp={treaure.ToString()}");
+                                    Core.InventoryAddEventArgs addEvent
+                                        = new Core.InventoryAddEventArgs(Core.EventTypes.InventoryAdd, ent.UID, pickedUpEnt.UID);
+                                    Core.EventBus.Publish(Core.EventTypes.InventoryAdd, addEvent);
+                                }
 
                             }
-                            else
+
+                            if (gotPath & !objPickedUp)
                             {
-                                // entity needs a target
-                                if (!NextToTarget(aiComp, posComp))
+                                // are we at the target?
+                                if (AtTarget(aiComp, posComp))
                                 {
+                                    //Game.MessageLog.Add("On Target!!!!!");
+                                    aiComp.Target = new RogueSharp.Point(0,0);
                                     aiComp.PathToTarget = null;
-                                    bool targetFound = SetTargetToExit(msg.entRequestingMove);
-                                    aiComp.GotPath = targetFound;
+                                    aiComp.GotPath = false;
 
-                                    //aiComp.PathToTarget = null;
-                                    //Game.MessageLog.Add($"Looking For Exit: Route Found = {targetFound.ToString()}");
-
-                                    Core.NoMoveEventArgs nmEv = new Core.NoMoveEventArgs(Core.EventTypes.NoMove, msg.entRequestingMove);
-                                    Core.EventBus.Publish(Core.EventTypes.NoMove, nmEv);
+                                    _dungeonMap.SetCellProperties(posComp.X, posComp.Y, false, true);
+                                   
+                                    Core.DeleteEntEventArgs deleteEv = new Core.DeleteEntEventArgs(Core.EventTypes.DeleteEntity, msg.entRequestingMove.UID);
+                                    Core.EventBus.Publish(Core.EventTypes.DeleteEntity, deleteEv);
                                 }
                                 else
                                 {
-                                    // entity IS next to target, move there
-                                    Game.MessageLog.Add("I'm Next To Target!");
-                                    aiComp.GotPath = false;
-                                    aiComp.PathToTarget = null;
-                                    RogueSharp.Point nm = new RogueSharp.Point(aiComp.Target.X, aiComp.Target.Y);
-                                    Core.DirectMoveEventArgs moveReq
-                                        = new Core.DirectMoveEventArgs(Core.EventTypes.DirectMove, msg.entRequestingMove, nm);
-                                    Core.EventBus.Publish(Core.EventTypes.ActionReqMove, moveReq);
+                                    // follow path
+                                    if (!NextToTarget(aiComp, posComp))
+                                    //if (!AtTarget(aiComp, posComp))
+                                    {
+                                        FollowPath(aiComp, posComp, msg.entRequestingMove);
+                                    }
+                                    else
+                                    {
+                                        // we're next to the target - move onto it
+                                        //Game.MessageLog.Add("NExt To Target!!!!!");
+
+                                        RogueSharp.Point nm = new RogueSharp.Point(aiComp.Target.X, aiComp.Target.Y);
+                                        Core.DirectMoveEventArgs moveReq
+                                            = new Core.DirectMoveEventArgs(Core.EventTypes.DirectMove, msg.entRequestingMove, nm);
+                                        Core.EventBus.Publish(Core.EventTypes.ActionReqMove, moveReq);
+                                    }
                                 }
+
+                                    
+                            }
+                            else if (!objPickedUp)
+                            {
+                                // no nothing, choose what to do...
+                                //Game.MessageLog.Add("doing not much");
+                                //Game.MessageLog.Add($"I am at target: {AtTarget(aiComp, posComp).ToString()}");
+
+                                bool exitFound = SetTargetToExit(msg.entRequestingMove);
+                                if (exitFound)
+                                {
+                                    aiComp.GotPath = exitFound;
+                                    Core.NoMoveEventArgs nmEv = new Core.NoMoveEventArgs(Core.EventTypes.NoMove, msg.entRequestingMove);
+                                    Core.EventBus.Publish(Core.EventTypes.NoMove, nmEv);
+                                }
+
                             }
                         }
                     }
+
+                    aiComp.UnderAttack = false;
                     break;
             }
+        }
+
+        private bool AreWeStandingOnSomething(Components.PositionComp posComp)
+        {
+            bool objectFound = false;
+            string posKey = posComp.X.ToString() + "-" + posComp.Y.ToString();
+            if (_em.EntityPostionLookUp.ContainsKey(posKey))
+            {
+                foreach (Core.Entity entOnPos in _em.EntityPostionLookUp[posKey])
+                {
+                    if (_em.CheckEntForBits(entOnPos.UID, (int)Core.ComponentTypes.Collectable))
+                    {
+                        //Game.MessageLog.Add("standing on something collectable");
+                        return true;
+                    }
+
+                }
+            }
+            return objectFound;
         }
 
         private bool AtTarget(Components.AIComp aiC, Components.PositionComp posC)
@@ -175,8 +286,6 @@ namespace ECS_Test.Systems
 
                     if (nextToTarget)
                     { 
-                        Game.MessageLog.Add("I'm There Sonny");
-                        //TODO Finalise movement
                         aiC.GotPath = false;
                         aiC.PathToTarget = null;
                         RogueSharp.Point nm = new RogueSharp.Point(aiC.Target.X, aiC.Target.Y);
@@ -211,11 +320,18 @@ namespace ECS_Test.Systems
             }
         }
 
+        private void ResetAI(Components.AIComp aiCompToReset)
+        {
+            aiCompToReset.GotPath = false;
+            aiCompToReset.AtTarget = false;
+            aiCompToReset.PathToTarget = null;
+            aiCompToReset.Target = new RogueSharp.Point();
+        }
+
         private bool SetTargetToExit(Core.Entity ent)
         {
             bool targetFound = false;
-            RogueSharp.PathFinder pF = new RogueSharp.PathFinder(_dungeonMap);
-
+           
             // get the AI component
             List<Components.Component> entComps = _em.GetCompsByID(ent.UID);
             Components.AIComp aiComp
@@ -223,6 +339,7 @@ namespace ECS_Test.Systems
 
             Components.PositionComp curPos
                 = (Components.PositionComp)entComps.FirstOrDefault(x => x.CompType == Core.ComponentTypes.Position);
+
 
             int exitBit = (int)Core.ComponentTypes.Stairs;
             List<int> stairsFound = new List<int>();
@@ -244,19 +361,27 @@ namespace ECS_Test.Systems
                 aiComp.Target = new RogueSharp.Point(posComp.X, posComp.Y);
 
                 // get path to target
+                _dungeonMap.SetIsWalkable(curPos.X, curPos.Y, true);
+                //_dungeonMap.SetIsWalkable(posComp.X, posComp.Y, true);
+                RogueSharp.PathFinder pF = new RogueSharp.PathFinder(_dungeonMap, 1.41);
+
                 RogueSharp.Cell endCell = (RogueSharp.Cell)_dungeonMap.GetCell(posComp.X, posComp.Y);
                 RogueSharp.Cell startCell = (RogueSharp.Cell)_dungeonMap.GetCell(curPos.X, curPos.Y);
                 try
                 {
                     RogueSharp.Path pathToTarget = pF.ShortestPath(startCell, endCell);
                     aiComp.PathToTarget = pathToTarget;
+                    _dungeonMap.SetIsWalkable(curPos.X, curPos.Y, false);
+                    //_dungeonMap.SetIsWalkable(posComp.X, posComp.Y, false);
                     targetFound = true;
                     return targetFound;
                 }
                 catch (RogueSharp.PathNotFoundException e)
                 {
                     //TODO sort out this mess....
-
+                    ResetAI(aiComp);
+                    _dungeonMap.SetIsWalkable(curPos.X, curPos.Y, false);
+                    _dungeonMap.SetIsWalkable(posComp.X, posComp.Y, false);
                     Game.MessageLog.Add("NO PATH Exception!");
                     return targetFound;
                 }
@@ -267,8 +392,10 @@ namespace ECS_Test.Systems
             }
         }
 
-        private void CheckSurroundingsForGold(Core.Entity ent)
+        private List<RogueSharp.Point> CheckSurroundingsForTreasure(Core.Entity ent)
         {
+            List<RogueSharp.Point> retList = new List<RogueSharp.Point>();
+
             List<Components.Component> compList = _em.GetCompsByID(ent.UID);
             Components.PositionComp pc
                 = (Components.PositionComp)compList.FirstOrDefault(x => x.CompType == Core.ComponentTypes.Position);
@@ -297,75 +424,34 @@ namespace ECS_Test.Systems
                     {
 
                         List<Core.Entity> entsList = _em.EntityPostionLookUp[key];
-                        //if (entsList.Count > 1)
-                        //{
-                        //    Game.MessageLog.Add($"Can see {entsList.Count.ToString()} at {key}");
-                        //}
+
                         foreach (Core.Entity entAtPos in entsList)
                         {
-                            
                             // look for gold
                             int innerID = entAtPos.UID;
                             if (_em.EntityBitLookUp.ContainsKey(innerID))
                             {
                                 int entBit = _em.EntityBitLookUp[innerID];
-                                
-                                int cb = entBit & (int)Core.ComponentTypes.Value;
 
-                                //Game.MessageLog.Add($"Contains {cb.ToString()}");
-
-                                if ((entBit & (int)Core.ComponentTypes.Value) > 0)
+                                if ((entBit & (int)Core.ComponentTypes.Collectable) > 0)
                                 {
-                                    // sommething has value - ad to our target list
-                                    targetList.Add(innerID, new RogueSharp.Point(xp, yp));
+                                    // entity is collectable
+                                    List<Components.Component> entCompList = _em.GetCompsByID(innerID);
+                                    Components.CollectableComp collComp
+                                        = (Components.CollectableComp)entCompList.FirstOrDefault(x => x.CompType == Core.ComponentTypes.Collectable);
+                                    if (collComp.Treasure)
+                                    {
+                                        // sommething has value - ad to our target list
+                                        targetList.Add(innerID, new RogueSharp.Point(xp, yp));
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
-
-            //Game.MessageLog.Add($"TargetList = {targetList.Count.ToString()}");
-
-            // do something with targetList
-            if (targetList.Count > 0)
-            {
-                int distanceToTarget = 1000;
-                RogueSharp.Point targetPoint = new RogueSharp.Point(0, 0);
-                foreach (KeyValuePair<int, RogueSharp.Point> entry in targetList)
-                {
-
-                    List<RogueSharp.Point> path
-                        = Core.Bresenhams.SuperCoverLine(new RogueSharp.Point(pc.X, pc.Y), entry.Value);
-                    int pathSize = path.Count();
-
-                    if (pathSize < distanceToTarget)
-                    {
-
-                        targetPoint = entry.Value;
-                        distanceToTarget = pathSize;
-                    }
-
-                }
-
-                RogueSharp.Cell endCell = (RogueSharp.Cell)_dungeonMap.GetCell(targetPoint.X, targetPoint.Y);
-                RogueSharp.Cell startCell = (RogueSharp.Cell)_dungeonMap.GetCell(pc.X,pc.Y);
-                RogueSharp.PathFinder pF = new RogueSharp.PathFinder(_dungeonMap);
-
-                try
-                {
-                    RogueSharp.Path pathToTarget = pF.ShortestPath(startCell, endCell);
-                    aiC.PathToTarget = pathToTarget;
-                    aiC.Target = targetPoint;
-                    aiC.GotPath = true;
-                    Game.MessageLog.Add($"I'm Greedy! Gold is {distanceToTarget.ToString()} away");
-                }
-                catch (Exception e)
-                {
-                    Game.MessageLog.Add("GREEDY BUT NO PATH TO GOLD!");
-                }
-
-            }
+        
+            return retList;
         }
     }
 }

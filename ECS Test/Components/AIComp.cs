@@ -16,6 +16,12 @@ namespace ECS_Test.Components
         public int TurnsSinceMove { get; set;  }
         public bool Greedy { get; set; }
         public Core.AIStates AiState { get; set; }
+        public bool UnderAttack { get; set; }
+        public HashSet<int> CurrentEnemies { get; set; }
+        public int LastBasher { get; set; }
+        public bool Fleeing { get; set; }
+        public int FleeingFrom { get; set; }
+        public List<int> ItemsAlreadySeen { get; set; }
 
         public AIComp()
         {
@@ -28,6 +34,12 @@ namespace ECS_Test.Components
             AtTarget = false;
             TurnsSinceMove = 0;
             Greedy = (RogueSharp.DiceNotation.Dice.Roll("1d10") > 4);
+            UnderAttack = false;
+            CurrentEnemies = new HashSet<int>();
+            LastBasher = 0;
+            Fleeing = false;
+            ItemsAlreadySeen = new List<int>();
+
             AiState = Core.AIStates.Sleeping;
         }
     }

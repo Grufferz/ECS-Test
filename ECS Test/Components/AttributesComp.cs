@@ -22,6 +22,7 @@ namespace ECS_Test.Components
         public int Sanity { get; set; }
         public string DmgBonus { get; set; }
         public int DmgMod { get; set; }
+        public int Morale { get; set; }
 
         public AttributesComp(int a, int si, int lev, int intBase )
         {
@@ -42,6 +43,8 @@ namespace ECS_Test.Components
             Ideas = Intelligence * 5;
             Sanity = Power * 5;
             Luck = Power * 5;
+
+            Morale = 100;
 
             int dmgSw = Strength + Size;
 

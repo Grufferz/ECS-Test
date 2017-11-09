@@ -31,13 +31,14 @@ namespace ECS_Test.Systems
             {
                 int res = posBit & pair.Value;
                 int res2 = rendBit & pair.Value;
+                int actRes = (int)Core.ComponentTypes.Actor & pair.Value;
 
                 char renderChar = 'X';
                 RLColor c = RLColor.White;
 
                 List<Components.Component> comps = EntityManager.GetCompsByID(pair.Key);
 
-                if (res > 0 && res2 > 0)
+                if ((res > 0 && res2 > 0) && (actRes == 0))
                 {
 
                     Components.RenderComp rendComp 
@@ -59,32 +60,57 @@ namespace ECS_Test.Systems
                 }
 
                 //draw stats
-                int res3 = statBit & pair.Value;
-                if (res3 > 0)
-                {
-                    Components.HealthComp healthStat = 
-                        (Components.HealthComp)comps.Find(s => s.CompType == Core.ComponentTypes.Health);
 
-                    Components.CreatureDetailsComp detailsComp =
-                        (Components.CreatureDetailsComp)comps.Find(x => x.CompType == Core.ComponentTypes.CreatureDetails);
-                    
-                    if (healthStat != null && detailsComp != null)
-                    {
-                        statsConsole.Print(xPos, yPos, detailsComp.PersonalName + " the " + detailsComp.Name, c);
-                        yPos++;
-                        statsConsole.Print(xPos, yPos, renderChar.ToString(), c);
-                        int width
-                            = Convert.ToInt32(((double)healthStat.Health / (double)healthStat.MaxHealth) * 16);
-                        int remainingWidth = 16 - width;
-                        statsConsole.SetBackColor(xPos + 2, yPos, width, 1, Core.Swatch.Primary);
-                        statsConsole.SetBackColor(xPos + 2 + width, yPos, remainingWidth, 1, Core.Swatch.PrimaryDarkest);
-                        statsConsole.Print(xPos + 2, yPos, $": {healthStat.Health.ToString()}", Core.Swatch.DbLight);
-                        yPos = yPos + 2;
-                    }
-                }
                
             }
+            foreach (KeyValuePair<int, int> pair in ents)
+            {
+                // draw only actors on top
+                if ((pair.Value & (int)Core.ComponentTypes.Actor) > 0)
+                {
 
+                    List<Components.Component> comps = EntityManager.GetCompsByID(pair.Key);
+
+                    Components.RenderComp rendComp = (Components.RenderComp)comps.Find(s => s.CompType == Core.ComponentTypes.Render);
+
+                    Components.PositionComp posComp =
+                        (Components.PositionComp)comps.Find(s => s.CompType == Core.ComponentTypes.Position);
+
+                    if (rendComp != null && posComp != null)
+                    {
+                        console.Set(posComp.X, posComp.Y, rendComp.Colour,
+                            Core.Colours.FloorBackground, rendComp.Glyph);
+                    }
+
+                    int res3 = statBit & pair.Value;
+                    if (res3 > 0)
+                    {
+                        Components.HealthComp healthStat =
+                            (Components.HealthComp)comps.Find(s => s.CompType == Core.ComponentTypes.Health);
+
+                        Components.CreatureDetailsComp detailsComp =
+                            (Components.CreatureDetailsComp)comps.Find(x => x.CompType == Core.ComponentTypes.CreatureDetails);
+
+                        Components.InventoryComp invComp = (Components.InventoryComp)comps.Find(x => x.CompType == Core.ComponentTypes.Inventory);
+
+                        if (healthStat != null && detailsComp != null)
+                        {
+                            statsConsole.Print(xPos, yPos, detailsComp.PersonalName + " the " + detailsComp.Name, rendComp.Colour);
+                            yPos++;
+                            statsConsole.Print(xPos, yPos, rendComp.Glyph.ToString(), rendComp.Colour);
+                            int width
+                                = Convert.ToInt32(((double)healthStat.Health / (double)healthStat.MaxHealth) * 16);
+                            int remainingWidth = 16 - width;
+                            statsConsole.SetBackColor(xPos + 2, yPos, width, 1, Core.Swatch.Primary);
+                            statsConsole.SetBackColor(xPos + 2 + width, yPos, remainingWidth, 1, Core.Swatch.PrimaryDarkest);
+                            statsConsole.Print(xPos + 2, yPos, $": {healthStat.Health.ToString()}", Core.Swatch.DbLight);
+                            yPos++;
+                            statsConsole.Print(xPos, yPos, $"Carrying {invComp.Treasure.Count.ToString()} Items", rendComp.Colour);
+                            yPos = yPos + 2;
+                        }
+                    }
+                }
+            }
             // stats console
             statsConsole.Print(1, 1, $"Y=: {yPos.ToString()}", Core.Colours.TextHeading);
         }

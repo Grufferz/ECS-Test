@@ -49,6 +49,7 @@ namespace ECS_Test
         public static Systems.CollisionSystem CollisionSystem { get; private set; }
         public static Systems.UseSystem UseSystem { get; private set; }
         public static Systems.GarbageSystem GarbageSystem { get; private set; }
+        public static Systems.InventorySystem InventorySystem { get; private set; }
 
         public static Core.DungeonMap DungeonMap { get; private set; }
 
@@ -84,7 +85,7 @@ namespace ECS_Test
             ShedSystem = new Systems.SchedulingSystem();
             CollisionSystem = new Systems.CollisionSystem(EntityManager);
             UseSystem = new Systems.UseSystem(EntityManager);
-
+            InventorySystem = new Systems.InventorySystem(EntityManager);
 
             //listen for critical events
             Core.EventBus.Subscribe(Core.EventTypes.GameCritical, (sender, e) => OnMessage(e));
@@ -106,7 +107,7 @@ namespace ECS_Test
             DungeonMap.UpdateFOVForMonsters(EntityManager);
 
             //creat garbage system
-            GarbageSystem = new Systems.GarbageSystem(ShedSystem, EntityManager);
+            GarbageSystem = new Systems.GarbageSystem(ShedSystem, EntityManager, DungeonMap);
 
             //create AI system
             AISystem = new Systems.AISystem(EntityManager, DungeonMap, GarbageSystem);
