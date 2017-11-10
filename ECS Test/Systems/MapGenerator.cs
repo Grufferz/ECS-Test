@@ -100,7 +100,7 @@ namespace ECS_Test.Systems
             {
                 if (IsPotentialDoor(c))
                 {
-                    _map.SetCellProperties(c.X, c.Y, false, true);
+                    _map.SetCellProperties(c.X, c.Y, false, true, true);
                     _map.Doors.Add(new Core.DoorHelper(c.X, c.Y, false));
 
                     // create door entity - needs pos, render, door
@@ -167,11 +167,15 @@ namespace ECS_Test.Systems
         {
             foreach (var room in _map.Rooms)
             {
-                RogueSharp.Point randRoomLoc = _map.GetRandomWalkableLocationInRoom(room);
-                if (randRoomLoc != null)
+                if (RogueSharp.DiceNotation.Dice.Roll("1d100") > 5)
                 {
-                    entMan.AddMonster(randRoomLoc.X, randRoomLoc.Y);
+                    RogueSharp.Point randRoomLoc = _map.GetRandomWalkableLocationInRoom(room);
+                    if (randRoomLoc != null)
+                    {
+                        entMan.AddMonster(randRoomLoc.X, randRoomLoc.Y, _map);
+                    }
                 }
+
             }
         }
 
@@ -181,7 +185,7 @@ namespace ECS_Test.Systems
             {
                 for (int y = room.Top + 1; y < room.Bottom; y++)
                 {
-                    _map.SetCellProperties(x, y, true, true, false);
+                    _map.SetCellProperties(x, y, true, true, true);
                 }
             }
         }
@@ -201,7 +205,7 @@ namespace ECS_Test.Systems
         {
             for (int x = Math.Min( xStart, xEnd); x <= Math.Max( xStart, xEnd ); x++ )
             {
-                _map.SetCellProperties(x, yPos, true, true);
+                _map.SetCellProperties(x, yPos, true, true, true);
             }
         }
 
@@ -209,7 +213,7 @@ namespace ECS_Test.Systems
         {
             for (int y = Math.Min( yStart, yEnd ); y <= Math.Max( yStart, yEnd ); y++)
             {
-                _map.SetCellProperties(xPos, y, true, true);
+                _map.SetCellProperties(xPos, y, true, true, true);
             }
         }
     }

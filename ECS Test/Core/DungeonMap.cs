@@ -71,7 +71,7 @@ namespace ECS_Test.Core
                 return;
             }
             // if cell in FOV draw with lighter colour
-            if (IsInFov( cell.X, cell.Y ))
+            if (IsInFov(cell.X, cell.Y))
             {
                 if (cell.IsWalkable)
                 {
@@ -89,7 +89,7 @@ namespace ECS_Test.Core
                     console.Set(cell.X, cell.Y, Colours.Floor, Colours.FloorBackground, '.');
                 }
                 else
-                {
+                {   
                     console.Set(cell.X, cell.Y, Colours.Wall, Colours.WallBackground, '#');
                 }
             }
@@ -138,5 +138,6 @@ namespace ECS_Test.Core
                 }
             }
         }
+
     }
 }

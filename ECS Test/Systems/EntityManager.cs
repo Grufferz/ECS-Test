@@ -16,21 +16,36 @@ namespace ECS_Test.Systems
         public Dictionary<string, List<Core.Entity>> EntityPostionLookUp { get; private set; }
         public Dictionary<int, Core.Entity> JustEntities { get; private set; }
         public List<string> CreatNames;
+        public HashSet<int>[,] Positions;
         public Random r;
+        private int _width;
+        private int _height;
 
-        public EntityManager()
+        public EntityManager(int w, int h)
         {
             _entityID = 1;
             Entities = new Dictionary<int, List<Components.Component>>();
             EntityBitLookUp = new Dictionary<int, int>();
-            EntityPostionLookUp = new Dictionary<string, List<Core.Entity>>();
+            //EntityPostionLookUp = new Dictionary<string, List<Core.Entity>>();
             JustEntities = new Dictionary<int, Core.Entity>();
-      
+
+            _height = h;
+            _width = w;
+            Positions = new HashSet<int>[_height, _width];
+            for (int y = 0; y < _height; y++)
+            {
+                for (int x = 0; x < _width; x++)
+                {
+                    Positions[y, x] = new HashSet<int>();
+                }
+            }
+
+
             r = new Random();
             CreatNames = ReadCreatureNames(100);
         }
 
-        public void AddMonster(int x, int y)
+        public void AddMonster(int x, int y, Core.DungeonMap m)
         {
             Core.Entity e = new Core.Entity(_entityID);
             Core.EntityReturner er;
@@ -42,11 +57,11 @@ namespace ECS_Test.Systems
 
             if (RogueSharp.DiceNotation.Dice.Roll("1d10") < 6)
             {
-                er = Core.EntityFactory.CreateOrc(x, y, creatureName);
+                er = Core.EntityFactory.CreateOrc(x, y, creatureName, m);
             }
             else
             {
-                er = Core.EntityFactory.CreateKobold(x, y, creatureName);
+                er = Core.EntityFactory.CreateKobold(x, y, creatureName, m);
             }
 
             //add entity to entity dict
@@ -55,7 +70,7 @@ namespace ECS_Test.Systems
             JustEntities.Add(_entityID, e);
 
             //add to PositionLookUp
-            AddEntToPosition(x, y, e);
+            AddEntToPosition(x, y, e.UID);
 
             //try adding to schedule
             Components.Component ts = GetSingleComponentByID(_entityID, Core.ComponentTypes.Schedulable);
@@ -82,7 +97,7 @@ namespace ECS_Test.Systems
             JustEntities.Add(_entityID, e);
 
             //add to PositionLookUp
-            AddEntToPosition(x, y, e);
+            AddEntToPosition(x, y, e.UID);
 
             // inc entityID
             _entityID++;
@@ -91,7 +106,7 @@ namespace ECS_Test.Systems
         public void AddStairs(int x, int y, bool isUp)
         {
             var e = new Core.Entity(_entityID);
-           // List<Components.Component> compList = new List<Components.Component>();
+            // List<Components.Component> compList = new List<Components.Component>();
 
             Core.EntityReturner er = Core.EntityFactory.CreateStairs(x, y, isUp);
 
@@ -101,7 +116,7 @@ namespace ECS_Test.Systems
             JustEntities.Add(_entityID, e);
 
             //add to PositionLookUp
-            AddEntToPosition(x, y, e);
+            AddEntToPosition(x, y, e.UID);
 
             // inc entityID
             _entityID++;
@@ -110,21 +125,16 @@ namespace ECS_Test.Systems
         public void AddTreasure(int x, int y)
         {
             var e = new Core.Entity(_entityID);
-           // List<Components.Component> compList = new List<Components.Component>();
+            // List<Components.Component> compList = new List<Components.Component>();
 
-            Core.EntityReturner er = Core.EntityFactory.CreateGold(x, y);
-
-            
+            Core.EntityReturner er = Core.EntityFactory.CreateGold(x, y, r.Next());
 
             //add entity to entity dic
             Entities.Add(_entityID, er.ComponentList);
             EntityBitLookUp.Add(_entityID, er.LookUpBit);
             JustEntities.Add(_entityID, e);
 
-            AddEntToPosition(x, y, e);
-
-            bool check = CheckEntForBits(_entityID, (int)Core.ComponentTypes.ItemValue);
-            Game.MessageLog.Add($"has value comp = {check.ToString()}");
+            AddEntToPosition(x, y, e.UID);
 
             // inc entityID
             _entityID++;
@@ -166,7 +176,7 @@ namespace ECS_Test.Systems
             //Dictionary<int, List<Components.Component>>  RetDict = new Dictionary<int, List<Components.Component>>();
             List<int> RetList = new List<int>();
             int toLookFor = (int)compToLookFor;
-            foreach(KeyValuePair<int, int> entry in EntityBitLookUp)
+            foreach (KeyValuePair<int, int> entry in EntityBitLookUp)
             {
                 int v = entry.Value;
                 if ((toLookFor & v) > 0)
@@ -191,7 +201,7 @@ namespace ECS_Test.Systems
             return retList;
         }
 
-        public List<Components.Component> GetCompsByID (int eid)
+        public List<Components.Component> GetCompsByID(int eid)
         {
             List<Components.Component> retList;
             if (Entities.TryGetValue(eid, out retList))
@@ -202,14 +212,14 @@ namespace ECS_Test.Systems
             {
                 return null;
             }
-            
+
         }
 
         public Dictionary<int, List<Components.Component>> GetDetailsByIDList(List<int> entIDs)
         {
             Dictionary<int, List<Components.Component>> returnDict = new Dictionary<int, List<Components.Component>>();
 
-            foreach( int eid in entIDs )
+            foreach (int eid in entIDs)
             {
                 if (Entities.ContainsKey(eid))
                 {
@@ -233,6 +243,16 @@ namespace ECS_Test.Systems
                 }
             }
             return returnComp;
+        }
+
+        public int GetWidth()
+        {
+            return _width;
+        }
+
+        public int GetHeight()
+        {
+            return _height;
         }
 
         public void PrintLastID()
@@ -272,16 +292,17 @@ namespace ECS_Test.Systems
                 {
                     Components.PositionComp posComp 
                         = (Components.PositionComp)GetSingleComponentByID(eid, Core.ComponentTypes.Position);
-                    string lu = posComp.X.ToString() + "-" + posComp.Y.ToString();
-                    if (EntityPostionLookUp.ContainsKey(lu))
-                    {
-                        List<Core.Entity> entList = EntityPostionLookUp[lu];
-                        entList.RemoveAll(x => x.UID == eid);
-                        //if (entList.Count == 0)
-                        //{
-                        //    EntityPostionLookUp.Remove(lu);
-                        //}
-                    }
+                    RemoveEntFromPosition(posComp.X, posComp.Y, eid);
+                    //string lu = posComp.X.ToString() + "-" + posComp.Y.ToString();
+                    //if (EntityPostionLookUp.ContainsKey(lu))
+                    //{
+                    //    List<Core.Entity> entList = EntityPostionLookUp[lu];
+                    //    entList.RemoveAll(x => x.UID == eid);
+                    //    if (entList.Count == 0)
+                    //    {
+                    //        EntityPostionLookUp.Remove(lu);
+                    //    }
+                    //}
                     
                 }
                 JustEntities.Remove(eid);
@@ -290,33 +311,115 @@ namespace ECS_Test.Systems
             }
         }
 
-        public void AddEntToPosition(int xp, int yp, Core.Entity ent)
+        public void AddEntToPosition(int xp, int yp, int eid)
         {
-            string dictKey = xp.ToString() + "-" + yp.ToString();
-            if (!EntityPostionLookUp.ContainsKey(dictKey))
-            {
-                EntityPostionLookUp.Add(dictKey, new List<Core.Entity>());
-            }
-            EntityPostionLookUp[dictKey].Add(ent);
+            Positions[yp, xp].Add(eid);
+
+            //string dictKey = xp.ToString() + "-" + yp.ToString();
+            //if (!EntityPostionLookUp.ContainsKey(dictKey))
+            //{
+            //    EntityPostionLookUp.Add(dictKey, new List<Core.Entity>());
+            //}
+            //EntityPostionLookUp[dictKey].Add(ent);
         }
 
-        public void RemoveEntFromPosition(int xp, int yp, Core.Entity ent)
+        public void RemoveCompFromEnt(int eid, Core.ComponentTypes cType)
         {
-            string dictKey = xp.ToString() + "-" + yp.ToString();
-            bool deleteMe = false;
-            if (EntityPostionLookUp.ContainsKey(dictKey))
+
+            List<Components.Component> entComps = Entities[eid];
+            entComps.RemoveAll(x => x.CompType == cType);
+
+            int checker = 0;
+            EntityBitLookUp[eid] = checker;
+            foreach (Components.Component c in entComps)
             {
-                List<Core.Entity> l = EntityPostionLookUp[dictKey];
-                l.Remove(ent);
-                //if (l.Count == 0)
-                //{
-                 //   deleteMe = true;
-                //}
+                if (c.CompType == Core.ComponentTypes.Actor)
+                {
+                    checker = checker | (int)Core.ComponentTypes.Actor;
+                }
+                if (c.CompType == Core.ComponentTypes.AI)
+                {
+                    checker = checker | (int)Core.ComponentTypes.AI;
+                }
+                if (c.CompType == Core.ComponentTypes.Collectable)
+                {
+                    checker = checker | (int)Core.ComponentTypes.Collectable;
+                }
+                if (c.CompType == Core.ComponentTypes.CreatureDetails)
+                {
+                    checker = checker | (int)Core.ComponentTypes.CreatureDetails;
+                }
+                if (c.CompType == Core.ComponentTypes.Door)
+                {
+                    checker = checker | (int)Core.ComponentTypes.Door;
+                }
+                if (c.CompType == Core.ComponentTypes.Health)
+                {
+                    checker = checker | (int)Core.ComponentTypes.Health;
+                }
+                if (c.CompType == Core.ComponentTypes.Inventory)
+                {
+                    checker = checker | (int)Core.ComponentTypes.Inventory;
+                }
+                if (c.CompType == Core.ComponentTypes.ItemValue)
+                {
+                    checker = checker | (int)Core.ComponentTypes.ItemValue;
+                }
+                if (c.CompType == Core.ComponentTypes.Magic)
+                {
+                    checker = checker | (int)Core.ComponentTypes.Magic;
+                }
+                if (c.CompType == Core.ComponentTypes.MonsterStats)
+                {
+                    checker = checker | (int)Core.ComponentTypes.MonsterStats;
+                }
+                if (c.CompType == Core.ComponentTypes.Position)
+                {
+                    checker = checker | (int)Core.ComponentTypes.Position;
+                }
+                if (c.CompType == Core.ComponentTypes.Render)
+                {
+                    checker = checker | (int)Core.ComponentTypes.Render;
+                }
+                if (c.CompType == Core.ComponentTypes.Schedulable)
+                {
+                    checker = checker | (int)Core.ComponentTypes.Schedulable;
+                }
+                if (c.CompType == Core.ComponentTypes.Stairs)
+                {
+                    checker = checker | (int)Core.ComponentTypes.Stairs;
+                }
+                if (c.CompType == Core.ComponentTypes.Useable)
+                {
+                    checker = checker | (int)Core.ComponentTypes.Useable;
+                }
+
+                EntityBitLookUp[eid] = checker;
             }
-            //if (deleteMe)
-            //{
-             //   EntityPostionLookUp.Remove(dictKey);
-            //}
+        }
+
+        public void RemoveEntFromPosition(int xp, int yp, int entID)
+        {
+            HashSet<int> al = Positions[yp, xp];
+            //Game.MessageLog.Add($"beforehand = {al.Count.ToString()}");
+            //Game.MessageLog.Add($"Before = {al.Count().ToString()}");
+            //al.RemoveWhere(x => x == entID);
+            al.Remove(entID);
+            //Game.MessageLog.Add($"After = {al.Count().ToString()}");
+        }
+
+        public bool CheckPosForCollectableEnt(int xp, int yp)
+        {
+            HashSet<int> al = Positions[yp, xp];
+            foreach (int eid in al)
+            {
+                int cb = EntityBitLookUp[eid];
+                if ((cb & (int)Core.ComponentTypes.Collectable) > 0)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         public void SaveGame(RogueSharp.Map dm, int mapLevel, int randomSeed)

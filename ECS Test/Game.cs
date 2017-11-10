@@ -55,6 +55,7 @@ namespace ECS_Test
 
         private static int _mapLevel = 1;
         private static int seed = (int)DateTime.UtcNow.Ticks;
+        //private static int seed = 1;
         private static int _turn = 0;
 
 
@@ -75,7 +76,7 @@ namespace ECS_Test
             _inventoryConsole = new RLConsole(_inventoryWidth, _inventoryHeight);
             
             // create systems, entityManager first
-            EntityManager = new Systems.EntityManager();
+            EntityManager = new Systems.EntityManager(_mapWidth, _mapHeight);
 
             CommandSystem = new Systems.CommandSystem();
             MessageLog = new Systems.MessageLog();
@@ -104,7 +105,7 @@ namespace ECS_Test
             mapGenerator.PlaceGold(EntityManager);
 
             //run initial FOV for monsters
-            DungeonMap.UpdateFOVForMonsters(EntityManager);
+            //DungeonMap.UpdateFOVForMonsters(EntityManager);
 
             //creat garbage system
             GarbageSystem = new Systems.GarbageSystem(ShedSystem, EntityManager, DungeonMap);
@@ -205,6 +206,7 @@ namespace ECS_Test
 
                 // update fov
                 DungeonMap.UpdateFOVForMonsters(EntityManager);
+                //DungeonMap.UpdateDrawFOV(EntityManager);
 
                 //add monster back in queue
                 Components.Component ts = EntityManager.GetSingleComponentByID(nextEnt.UID, Core.ComponentTypes.Schedulable);
@@ -215,6 +217,7 @@ namespace ECS_Test
                     ShedSystem.Add(nextEnt, entTime);
                 }
             }
+            //System.Threading.Thread.Sleep(10);
             _turn++;
             //MessageLog.Add($"Step: {++_turn}");
             //}
@@ -232,6 +235,8 @@ namespace ECS_Test
                 _mapConsole.Clear();
                 _statConsole.Clear();
                 _messageConsole.Clear();
+
+                //DungeonMap.UpdateDrawFOV(EntityManager);
 
                 DungeonMap.Draw(_mapConsole);
                 RenderSystem.Update(_mapConsole, _statConsole);

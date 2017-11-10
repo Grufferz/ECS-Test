@@ -22,12 +22,13 @@ namespace ECS_Test.Components
         public bool Fleeing { get; set; }
         public int FleeingFrom { get; set; }
         public List<int> ItemsAlreadySeen { get; set; }
+        public Core.DungeonMap DMap { get; }
 
-        public AIComp()
+        public AIComp(Core.DungeonMap m)
         {
             HasAI = true;
             CompType = Core.ComponentTypes.AI;
-
+            DMap = m;
             Target = new RogueSharp.Point();
             PathToTarget = null;
             GotPath = false;

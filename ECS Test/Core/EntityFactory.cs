@@ -33,7 +33,7 @@ namespace ECS_Test.Core
             return er;
         }
 
-        public static EntityReturner CreateOrc(int xPos, int yPos, string name)
+        public static EntityReturner CreateOrc(int xPos, int yPos, string name, DungeonMap m)
         {
             List<Components.Component> compList = new List<Components.Component>();
             //stats
@@ -67,7 +67,7 @@ namespace ECS_Test.Core
             compList.Add(actComp);
             checker = checker | (int)Core.ComponentTypes.Actor;
 
-            Components.AIComp aiComp = new Components.AIComp();
+            Components.AIComp aiComp = new Components.AIComp(m);
             compList.Add(aiComp);
             checker = checker | (int)Core.ComponentTypes.AI;
 
@@ -89,7 +89,7 @@ namespace ECS_Test.Core
             return er;
         }
 
-        public static EntityReturner CreateGold(int x, int y)
+        public static EntityReturner CreateGold(int x, int y, int rndNum)
         {
             // set bitwise to 0
             int checker = 0;
@@ -108,10 +108,8 @@ namespace ECS_Test.Core
             compList.Add(valComp);
             checker = checker | (int)Core.ComponentTypes.ItemValue;
 
-            Game.MessageLog.Add($"V={valComp.ItemValue.ToString()}");
-
             Components.CollectableComp collComp 
-                = new Components.CollectableComp(1, true, true, Types.ItemTypes.Treasure);
+                = new Components.CollectableComp(1, true, true, Types.ItemTypes.Treasure, rndNum);
             compList.Add(collComp);
             checker = checker | (int)Core.ComponentTypes.Collectable;
 
@@ -119,7 +117,7 @@ namespace ECS_Test.Core
             return er;
         }
 
-        public static EntityReturner CreateKobold(int xPos, int yPos, string name)
+        public static EntityReturner CreateKobold(int xPos, int yPos, string name, DungeonMap m)
         {
             List<Components.Component> compList = new List<Components.Component>();
 
@@ -154,7 +152,7 @@ namespace ECS_Test.Core
             compList.Add(actComp);
             checker = checker | (int)Core.ComponentTypes.Actor;
 
-            Components.AIComp aiComp = new Components.AIComp();
+            Components.AIComp aiComp = new Components.AIComp(m);
             compList.Add(aiComp);
             checker = checker | (int)Core.ComponentTypes.AI;
 

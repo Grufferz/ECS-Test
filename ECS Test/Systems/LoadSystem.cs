@@ -85,18 +85,18 @@ namespace ECS_Test.Systems
                     //        componentList.Add(msc);
                     //    }
                     //}
-                    else if (inner.Key == Core.ComponentTypes.AI)
-                    {
-                        List<Dictionary<string, string>> comps = inner.Value;
-                        foreach (Dictionary<string, string> cDict in comps)
-                        {
-                            bool aw = bool.Parse(cDict["HasAI"]);
+                    //else if (inner.Key == Core.ComponentTypes.AI)
+                    //{
+                    //    List<Dictionary<string, string>> comps = inner.Value;
+                    //    foreach (Dictionary<string, string> cDict in comps)
+                    //    {
+                    //        bool aw = bool.Parse(cDict["HasAI"]);
                        
-                            Components.AIComp msc = new Components.AIComp();
-                            msc.HasAI = aw;
-                            componentList.Add(msc);
-                        }
-                    }
+                    //        Components.AIComp msc = new Components.AIComp();
+                    //        msc.HasAI = aw;
+                    //        componentList.Add(msc);
+                    //    }
+                    //}
                 }
                 returnDict.Add(eid, componentList);
             }

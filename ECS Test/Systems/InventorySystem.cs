@@ -36,18 +36,17 @@ namespace ECS_Test.Systems
                     List<Components.Component> pickedUpObjComps = _entityManager.GetCompsByID(pickedUpObj);
                     List<Components.Component> entComps = _entityManager.GetCompsByID(entPickingUp);
 
-                    //Game.MessageLog.Add("LOOKING FOR VALUE");
-                    foreach (Components.Component c in pickedUpObjComps)
-                    {
-                        if (c.CompType == Core.ComponentTypes.ItemValue)
-                        {
-                            Game.MessageLog.Add("ACTORR!" + c.ToString());
-                        }
-                        
-                    }
-
                     Components.InventoryComp invComp 
-                        = (Components.InventoryComp)entComps.Find(x => x.CompType == Core.ComponentTypes.Inventory);
+                        = (Components.InventoryComp) _entityManager.GetSingleComponentByID(entPickingUp, Core.ComponentTypes.Inventory);
+
+                    //Components.InventoryComp invComp 
+                     //   = (Components.InventoryComp)entComps.Find(x => x.CompType == Core.ComponentTypes.Inventory);
+
+
+                    //bool canIPickUp = invComp != null;
+                    //Game.MessageLog.Add($"________________________________CAN I PICK UP ====== {canIPickUp.ToString()}");
+
+
 
                     if (invComp != null)
                     {
@@ -57,13 +56,10 @@ namespace ECS_Test.Systems
                         Components.CollectableComp collectComp =
                             (Components.CollectableComp)pickedUpObjComps.Find(x => x.CompType == Core.ComponentTypes.Collectable);
                         Components.ItemValueComp vC = (Components.ItemValueComp)pickedUpObjComps.Find(x => x.CompType == Core.ComponentTypes.ItemValue);
-                        foreach (Components.Component c in pickedUpObjComps)
-                        {
-                            Game.MessageLog.Add(c.ToString());
-                        }
+
+                        //Components.Component c = _entityManager.GetSingleComponentByID(collectComp.)
 
                         bool hasValue = (vC != null);
-
 
                         //is it treasure?
                         if (collectComp.Treasure)
@@ -75,10 +71,16 @@ namespace ECS_Test.Systems
                                 invComp.ValueCarried += vC.ItemValue;
                             }
 
-                            _entityManager.RemoveEntFromPosition(posComp.X, posComp.Y, _entityManager.JustEntities[pickedUpObj]);
-                            pickedUpObjComps.Remove(posComp);
+                            // remove position and collectable comps from picked up object
+                            _entityManager.RemoveCompFromEnt(pickedUpObj, Core.ComponentTypes.Position);
+                            _entityManager.RemoveCompFromEnt(pickedUpObj, Core.ComponentTypes.Collectable);
+                            _entityManager.RemoveEntFromPosition(posComp.X, posComp.Y, pickedUpObj);
+                            
+
+                            //pickedUpObjComps.Remove(posComp);
                             invComp.Treasure.Add(pickedUpObj);
-                            Game.MessageLog.Add("picking up treasure");
+                           // Game.MessageLog.Add("picking up treasure ==========================================================================================");
+                            
                         }
                         else
                         {
@@ -91,12 +93,15 @@ namespace ECS_Test.Systems
                             else
                             {
                                 Game.MessageLog.Add("picking up item");
-                                _entityManager.RemoveEntFromPosition(posComp.X, posComp.Y, _entityManager.JustEntities[pickedUpObj]);
+                                // System.Threading.Thread.Sleep(1000);
+                                _entityManager.RemoveEntFromPosition(posComp.X, posComp.Y, pickedUpObj);
+                                _entityManager.RemoveCompFromEnt(pickedUpObj, Core.ComponentTypes.Position);
                                 invComp.Inventory.Add(pickedUpObj);
                                 pickedUpObjComps.Remove(posComp);
                             }
                         }
                     }
+                    
                     break;
             }
         }

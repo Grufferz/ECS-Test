@@ -112,7 +112,31 @@ namespace ECS_Test.Systems
                 }
             }
             // stats console
-            statsConsole.Print(1, 1, $"Y=: {yPos.ToString()}", Core.Colours.TextHeading);
+            int count = 0;
+            for (int yp = 0; yp < EntityManager.GetHeight(); yp++)
+            {
+                for (int xp=0; xp < EntityManager.GetWidth(); xp++ )
+                {
+                    if (EntityManager.Positions[yp,xp].Count > 0)
+                    {
+                        HashSet<int> ent = EntityManager.Positions[yp, xp];
+         
+                        foreach(int indvID in ent)
+                        {
+                            List<Components.Component> inner = EntityManager.Entities[indvID];
+                            foreach( Components.Component ec in inner)
+                            {
+                                if (ec.CompType == Core.ComponentTypes.Collectable)
+                                {
+                                    count++;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            statsConsole.Print(1, 1, $"collectables=: {count.ToString()}", Core.Colours.TextHeading);
         }
     }
 }

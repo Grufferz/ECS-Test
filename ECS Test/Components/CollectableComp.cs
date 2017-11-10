@@ -12,15 +12,17 @@ namespace ECS_Test.Components
         public bool Stackable;
         public int Quantity;
         public bool Treasure;
+        public int RdmIdent;
         public Types.ItemTypes ItemType;
 
-        public CollectableComp(int quant, bool stack, bool treas, Types.ItemTypes it)
+        public CollectableComp(int quant, bool stack, bool treas, Types.ItemTypes it, int r)
         {
             CompType = Core.ComponentTypes.Collectable;
             Treasure = treas;
             Quantity = quant;
             Stackable = stack;
             ItemType = it;
+            RdmIdent = r;
         }
     }
 }

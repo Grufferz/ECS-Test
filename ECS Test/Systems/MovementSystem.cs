@@ -105,11 +105,11 @@ namespace ECS_Test.Systems
 
                         aiComp.TurnsSinceMove = 0;
                         _dungeonMap.SetIsWalkable(pos.X, pos.Y, true);
-                        _entityManager.RemoveEntFromPosition(pos.X, pos.Y, ent);
+                        _entityManager.RemoveEntFromPosition(pos.X, pos.Y, ent.UID);
                         pos.X = m.newX;
                         pos.Y = m.newY;
                         _dungeonMap.SetIsWalkable(m.newX, m.newY, false);
-                        _entityManager.AddEntToPosition(m.newX, m.newY, ent);
+                        _entityManager.AddEntToPosition(m.newX, m.newY, ent.UID);
                         
                     }
                     break;
@@ -131,7 +131,11 @@ namespace ECS_Test.Systems
 
                     Components.AIComp aiC =
                         (Components.AIComp)_entityManager.GetSingleComponentByID(nmEvent.EntNotMoving.UID, Core.ComponentTypes.AI);
-                    aiC.TurnsSinceMove++;
+                    if (aiC != null)
+                    {
+                        aiC.TurnsSinceMove++;
+                    }
+                    
                     //Game.MessageLog.Add($"Turns Since = {aiC.TurnsSinceMove.ToString()}");
                     break;
             }
