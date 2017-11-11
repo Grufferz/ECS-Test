@@ -40,7 +40,7 @@ namespace ECS_Test.Systems
                         = (Components.InventoryComp) _entityManager.GetSingleComponentByID(entPickingUp, Core.ComponentTypes.Inventory);
 
                     //Components.InventoryComp invComp 
-                     //   = (Components.InventoryComp)entComps.Find(x => x.CompType == Core.ComponentTypes.Inventory);
+                    //   = (Components.InventoryComp)entComps.Find(x => x.CompType == Core.ComponentTypes.Inventory);
 
 
                     //bool canIPickUp = invComp != null;
@@ -51,7 +51,7 @@ namespace ECS_Test.Systems
                     if (invComp != null)
                     {
 
-                        Components.PositionComp posComp = 
+                        Components.PositionComp posComp =
                             (Components.PositionComp)pickedUpObjComps.Find(x => x.CompType == Core.ComponentTypes.Position);
                         Components.CollectableComp collectComp =
                             (Components.CollectableComp)pickedUpObjComps.Find(x => x.CompType == Core.ComponentTypes.Collectable);
@@ -61,47 +61,56 @@ namespace ECS_Test.Systems
 
                         bool hasValue = (vC != null);
 
-                        //is it treasure?
-                        if (collectComp.Treasure)
+                        if (collectComp.Active)
                         {
-                            //TODO stackable treasure
-                            
-                            if (vC != null)
-                            {
-                                invComp.ValueCarried += vC.ItemValue;
-                            }
 
-                            // remove position and collectable comps from picked up object
-                            _entityManager.RemoveCompFromEnt(pickedUpObj, Core.ComponentTypes.Position);
-                            _entityManager.RemoveCompFromEnt(pickedUpObj, Core.ComponentTypes.Collectable);
-                            _entityManager.RemoveEntFromPosition(posComp.X, posComp.Y, pickedUpObj);
-                            
-
-                            //pickedUpObjComps.Remove(posComp);
-                            invComp.Treasure.Add(pickedUpObj);
-                           // Game.MessageLog.Add("picking up treasure ==========================================================================================");
-                            
-                        }
-                        else
-                        {
-                            // is it stackable? - not currently used
-                            //TODO stackable collectables
-                            if (collectComp.Stackable)
+                            //is it treasure?
+                            if (collectComp.Treasure)
                             {
+                                //TODO stackable treasure
+
+                                if (vC != null)
+                                {
+                                    invComp.ValueCarried += vC.ItemValue;
+                                }
+
+                                // remove position and collectable comps from picked up object
+                                _entityManager.RemoveCompFromEnt(pickedUpObj, Core.ComponentTypes.Position);
+                                collectComp.Active = false;
+                                //_entityManager.RemoveCompFromEnt(pickedUpObj, Core.ComponentTypes.Collectable);
+                                _entityManager.RemoveEntFromPosition(posComp.X, posComp.Y, pickedUpObj);
+
+
+                                //pickedUpObjComps.Remove(posComp);
+                                invComp.Treasure.Add(pickedUpObj);
+                                // Game.MessageLog.Add("picking up treasure ==========================================================================================");
 
                             }
                             else
                             {
-                                Game.MessageLog.Add("picking up item");
-                                // System.Threading.Thread.Sleep(1000);
-                                _entityManager.RemoveEntFromPosition(posComp.X, posComp.Y, pickedUpObj);
-                                _entityManager.RemoveCompFromEnt(pickedUpObj, Core.ComponentTypes.Position);
-                                invComp.Inventory.Add(pickedUpObj);
-                                pickedUpObjComps.Remove(posComp);
+                                // is it stackable? - not currently used
+                                //TODO stackable collectables
+                                if (collectComp.Stackable)
+                                {
+
+                                }
+                                else
+                                {
+                                    Game.MessageLog.Add("picking up item");
+                                    // System.Threading.Thread.Sleep(1000);
+                                    if (posComp != null)
+                                    {
+                                        _entityManager.RemoveEntFromPosition(posComp.X, posComp.Y, pickedUpObj);
+                                        _entityManager.RemoveCompFromEnt(pickedUpObj, Core.ComponentTypes.Position);
+                                        pickedUpObjComps.Remove(posComp);
+                                    }
+                                    invComp.Inventory.Add(pickedUpObj);
+
+                                }
                             }
+
                         }
                     }
-                    
                     break;
             }
         }

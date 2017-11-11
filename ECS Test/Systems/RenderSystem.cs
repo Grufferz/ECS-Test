@@ -29,6 +29,18 @@ namespace ECS_Test.Systems
 
             foreach (KeyValuePair<int, int> pair in ents)
             {
+                int eid = pair.Key;
+                int furnitureRes = (int)Core.ComponentTypes.Furniture & pair.Value;
+                if(furnitureRes > 0)
+                {
+                    Components.RenderComp rc = (Components.RenderComp)EntityManager.GetSingleComponentByID(eid, Core.ComponentTypes.Render);
+                    Components.PositionComp pc = (Components.PositionComp)EntityManager.GetSingleComponentByID(eid, Core.ComponentTypes.Position);
+                    console.Set(pc.X, pc.Y, rc.Colour, Core.Colours.FloorBackground, rc.Glyph);
+                }
+            }
+
+            foreach (KeyValuePair<int, int> pair in ents)
+            {
                 int res = posBit & pair.Value;
                 int res2 = rendBit & pair.Value;
                 int actRes = (int)Core.ComponentTypes.Actor & pair.Value;
@@ -75,10 +87,22 @@ namespace ECS_Test.Systems
 
                     Components.PositionComp posComp =
                         (Components.PositionComp)comps.Find(s => s.CompType == Core.ComponentTypes.Position);
+                    Components.AIComp aiComp = (Components.AIComp)comps.Find(x => x.CompType == Core.ComponentTypes.AI);
+
+                    RLColor rColor;
+
+                    if (aiComp.Fleeing)
+                    {
+                        rColor = RLColor.Red;
+                    }
+                    else
+                    {
+                        rColor = rendComp.Colour;
+                    }
 
                     if (rendComp != null && posComp != null)
                     {
-                        console.Set(posComp.X, posComp.Y, rendComp.Colour,
+                        console.Set(posComp.X, posComp.Y, rColor,
                             Core.Colours.FloorBackground, rendComp.Glyph);
                     }
 
@@ -105,7 +129,7 @@ namespace ECS_Test.Systems
                             statsConsole.SetBackColor(xPos + 2 + width, yPos, remainingWidth, 1, Core.Swatch.PrimaryDarkest);
                             statsConsole.Print(xPos + 2, yPos, $": {healthStat.Health.ToString()}", Core.Swatch.DbLight);
                             yPos++;
-                            statsConsole.Print(xPos, yPos, $"Carrying {invComp.Treasure.Count.ToString()} Items", rendComp.Colour);
+                            statsConsole.Print(xPos, yPos, $"Carrying {invComp.Treasure.Count.ToString()} Gold", rendComp.Colour);
                             yPos = yPos + 2;
                         }
                     }

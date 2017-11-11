@@ -67,7 +67,7 @@ namespace ECS_Test.Core
             compList.Add(actComp);
             checker = checker | (int)Core.ComponentTypes.Actor;
 
-            Components.AIComp aiComp = new Components.AIComp(m);
+            Components.AIComp aiComp = new Components.AIComp(m, Types.AITypes.Creature);
             compList.Add(aiComp);
             checker = checker | (int)Core.ComponentTypes.AI;
 
@@ -109,7 +109,7 @@ namespace ECS_Test.Core
             checker = checker | (int)Core.ComponentTypes.ItemValue;
 
             Components.CollectableComp collComp 
-                = new Components.CollectableComp(1, true, true, Types.ItemTypes.Treasure, rndNum);
+                = new Components.CollectableComp(1, true, true, Types.ItemTypes.Treasure, true);
             compList.Add(collComp);
             checker = checker | (int)Core.ComponentTypes.Collectable;
 
@@ -152,7 +152,7 @@ namespace ECS_Test.Core
             compList.Add(actComp);
             checker = checker | (int)Core.ComponentTypes.Actor;
 
-            Components.AIComp aiComp = new Components.AIComp(m);
+            Components.AIComp aiComp = new Components.AIComp(m, Types.AITypes.Creature);
             compList.Add(aiComp);
             checker = checker | (int)Core.ComponentTypes.AI;
 
@@ -197,6 +197,125 @@ namespace ECS_Test.Core
             Components.UseableComp useComp = new Components.UseableComp();
             compList.Add(useComp);
             checker = checker | (int)Core.ComponentTypes.Useable;
+
+            EntityReturner er = new EntityReturner(checker, compList);
+            return er;
+        }
+
+        public static EntityReturner CreateSword()
+        {
+            List<Components.Component> compList = new List<Components.Component>();
+
+            // set bitwise to 0
+            int checker = 0;
+
+            Components.WeaponComp weapComp = new Components.WeaponComp(6, Types.WeaponDmgTypes.Slashing, false, "Sword");
+            compList.Add(weapComp);
+            checker = checker | (int)ComponentTypes.Weapon;
+
+            Components.UseableComp useComp = new Components.UseableComp();
+            compList.Add(useComp);
+            checker = checker | (int)ComponentTypes.Useable;
+
+            Components.CollectableComp colComp = new Components.CollectableComp(1, false, false, Types.ItemTypes.Weapon, true);
+            compList.Add(colComp);
+            checker = checker | (int)ComponentTypes.Collectable;
+
+            Components.ItemValueComp valComp = new Components.ItemValueComp(RogueSharp.DiceNotation.Dice.Roll("1d3"));
+            compList.Add(valComp);
+            checker = checker | (int)ComponentTypes.ItemValue;
+
+            Components.RenderComp rendComp = new Components.RenderComp('|', Swatch.DbMetal);
+            compList.Add(rendComp);
+            checker = checker | (int)ComponentTypes.Render;
+
+            EntityReturner er = new EntityReturner(checker, compList);
+            return er;
+        }
+
+        public static EntityReturner CreateTrollClub()
+        {
+            List<Components.Component> compList = new List<Components.Component>();
+
+            // set bitwise to 0
+            int checker = 0;
+
+            Components.WeaponComp weapComp = new Components.WeaponComp(10, Types.WeaponDmgTypes.Crushing, false, "Club");
+            compList.Add(weapComp);
+            checker = checker | (int)ComponentTypes.Weapon;
+
+            Components.UseableComp useComp = new Components.UseableComp();
+            compList.Add(useComp);
+            checker = checker | (int)ComponentTypes.Useable;
+
+            Components.CollectableComp colComp = new Components.CollectableComp(1, false, false, Types.ItemTypes.Weapon, true);
+            compList.Add(colComp);
+            checker = checker | (int)ComponentTypes.Collectable;
+
+            Components.ItemValueComp valComp = new Components.ItemValueComp(RogueSharp.DiceNotation.Dice.Roll("1d3"));
+            compList.Add(valComp);
+            checker = checker | (int)ComponentTypes.ItemValue;
+
+            Components.RenderComp rendComp = new Components.RenderComp('|', Swatch.DbMetal);
+            compList.Add(rendComp);
+            checker = checker | (int)ComponentTypes.Render;
+
+            EntityReturner er = new EntityReturner(checker, compList);
+            return er;
+        }
+
+
+        public static EntityReturner CreateTroll(int xPos, int yPos, string name, DungeonMap m)
+        {
+            List<Components.Component> compList = new List<Components.Component>();
+            //stats
+            int lev = 2;
+            int size = 10;
+            int intBase = 1;
+
+            // set bitwise to 0
+            int checker = 0;
+
+            Components.PositionComp positionComp = new Components.PositionComp(xPos, yPos);
+            compList.Add(positionComp);
+            checker = checker | (int)ComponentTypes.Position;
+
+            Components.RenderComp rendComp = new Components.RenderComp('T', Core.Colours.OrcColour);
+            compList.Add(rendComp);
+            checker = checker | (int)ComponentTypes.Render;
+
+            Components.AttributesComp attComp = new Components.AttributesComp(10, size, lev, intBase);
+            compList.Add(attComp);
+            checker = checker | (int)ComponentTypes.Attributes;
+
+            //get base factor for health
+            int hp = ((int)(size + attComp.Hardiness) / 2) * lev;
+
+            Components.HealthComp healthComp = new Components.HealthComp(hp);
+            compList.Add(healthComp);
+            checker = checker | (int)ComponentTypes.Health;
+
+            Components.ActorComp actComp = new Components.ActorComp();
+            compList.Add(actComp);
+            checker = checker | (int)ComponentTypes.Actor;
+
+            Components.AIComp aiComp = new Components.AIComp(m, Types.AITypes.Creature);
+            compList.Add(aiComp);
+            checker = checker | (int)ComponentTypes.AI;
+
+            int speed = Game.Random.Next(3) + 6;
+            Components.SchedulableComp shedComp = new Components.SchedulableComp(speed);
+            compList.Add(shedComp);
+            checker = checker | (int)ComponentTypes.Schedulable;
+
+            Components.InventoryComp invComp = new Components.InventoryComp();
+            compList.Add(invComp);
+            checker = checker | (int)ComponentTypes.Inventory;
+
+            Components.CreatureDetailsComp detailsComp
+                = new Components.CreatureDetailsComp("Troll", name, Types.CreatureTypes.Troll);
+            compList.Add(detailsComp);
+            checker = checker | (int)ComponentTypes.CreatureDetails;
 
             EntityReturner er = new EntityReturner(checker, compList);
             return er;

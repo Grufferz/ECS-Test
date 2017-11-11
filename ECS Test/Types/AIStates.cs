@@ -8,9 +8,11 @@ namespace ECS_Test.Core
 {
     public enum AIStates
     {
-        Exiting = 1,
-        TreasureHunting = 2,
-        Sleeping = 3,
-        Waiting = 4
+        Sleeping = 1,
+        Waiting = 2,
+        Aggressive = 3,
+        Wandering = 4,
+        WanderingPickingUp = 5,
+        Fleeing = 6
     }
 }

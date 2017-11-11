@@ -40,7 +40,6 @@ namespace ECS_Test.Systems
                 }
             }
 
-
             r = new Random();
             CreatNames = ReadCreatureNames(100);
         }
@@ -54,8 +53,12 @@ namespace ECS_Test.Systems
             int ind = Game.Random.Next(CreatNames.Count - 1);
             string creatureName = CreatNames[ind];
 
-
-            if (RogueSharp.DiceNotation.Dice.Roll("1d10") < 6)
+            int entType = RogueSharp.DiceNotation.Dice.Roll("1d10");
+            if ( entType <= 2 )
+            {
+                er = Core.EntityFactory.CreateTroll(x, y, creatureName, m);
+            }
+            else if (entType > 2 && entType <6 )
             {
                 er = Core.EntityFactory.CreateOrc(x, y, creatureName, m);
             }
@@ -83,6 +86,40 @@ namespace ECS_Test.Systems
 
             // inc entityID
             _entityID++;
+
+            //add weapon to entity
+            AddWeaponToEntity(e.UID);
+
+        }
+
+        public void AddWeaponToEntity(int eid)
+        {
+            Core.Entity e = new Core.Entity(_entityID);
+            Core.EntityReturner er;
+
+            int weaponID = e.UID;
+
+            Components.CreatureDetailsComp cdc = (Components.CreatureDetailsComp)GetSingleComponentByID(eid, Core.ComponentTypes.CreatureDetails);
+
+            if (cdc.CreatureType != Types.CreatureTypes.Troll)
+            {
+                er = Core.EntityFactory.CreateSword();
+            }
+            else
+            {
+                er = Core.EntityFactory.CreateTrollClub();
+            }
+            
+
+            Entities.Add(_entityID, er.ComponentList);
+            EntityBitLookUp.Add(_entityID, er.LookUpBit);
+            JustEntities.Add(_entityID, e);
+
+            _entityID++;
+
+            // add weapon to entity
+            Core.InventoryAddEventArgs addEvent = new Core.InventoryAddEventArgs(Core.EventTypes.InventoryAdd, eid, weaponID);
+            Core.EventBus.Publish(Core.EventTypes.InventoryAdd, addEvent);
         }
 
         public void AddDoor(int x, int y, bool isOpen)
@@ -323,6 +360,34 @@ namespace ECS_Test.Systems
             //EntityPostionLookUp[dictKey].Add(ent);
         }
 
+        public void AddPositionToEnt(int eid, int x, int y)
+        {
+            Components.PositionComp pC = new Components.PositionComp(x, y);
+
+            List<Components.Component> entComps = Entities[eid];
+            entComps.Add(pC);
+
+            int checker = EntityBitLookUp[eid];
+            checker = checker | (int)Core.ComponentTypes.Position;
+            EntityBitLookUp[eid] = checker;
+            
+
+            AddEntToPosition(x, y, eid);
+        }
+
+        public void AddFurnitureToEnt(int eid)
+        {
+            Components.FurnitureComp fc = new Components.FurnitureComp();
+
+            List<Components.Component> entComps = Entities[eid];
+            entComps.Add(fc);
+
+            int checker = EntityBitLookUp[eid];
+            checker = checker | (int)Core.ComponentTypes.Furniture;
+            EntityBitLookUp[eid] = checker;
+
+        }
+
         public void RemoveCompFromEnt(int eid, Core.ComponentTypes cType)
         {
 
@@ -352,6 +417,10 @@ namespace ECS_Test.Systems
                 if (c.CompType == Core.ComponentTypes.Door)
                 {
                     checker = checker | (int)Core.ComponentTypes.Door;
+                }
+                if (c.CompType == Core.ComponentTypes.Furniture)
+                {
+                    checker = checker | (int)Core.ComponentTypes.Furniture;
                 }
                 if (c.CompType == Core.ComponentTypes.Health)
                 {

@@ -61,6 +61,7 @@
     <Compile Include="Components\Component.cs" />
     <Compile Include="Components\CreatureDetailsComp.cs" />
     <Compile Include="Components\DoorComp.cs" />
+    <Compile Include="Components\FurnitureComp.cs" />
     <Compile Include="Components\HealthComp.cs" />
     <Compile Include="Components\InventoryComp.cs" />
     <Compile Include="Components\MagicComp.cs" />
@@ -71,6 +72,7 @@
     <Compile Include="Components\StairComp.cs" />
     <Compile Include="Components\UseableComp.cs" />
     <Compile Include="Components\ItemValueComp.cs" />
+    <Compile Include="Components\WeaponComp.cs" />
     <Compile Include="Core\AIReqEventArgs.cs" />
     <Compile Include="Core\InventoryAddEventArgs.cs" />
     <Compile Include="Core\InventoryEventArgs.cs" />
@@ -119,8 +121,10 @@
     <Compile Include="Systems\StatsSystem.cs" />
     <Compile Include="Systems\SystemManager.cs" />
     <Compile Include="Systems\UseSystem.cs" />
+    <Compile Include="Types\AITypes.cs" />
     <Compile Include="Types\CreatureTypes.cs" />
     <Compile Include="Types\ItemTypes.cs" />
+    <Compile Include="Types\WeaponDmgTypes.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

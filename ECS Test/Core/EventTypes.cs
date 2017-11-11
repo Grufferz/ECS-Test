@@ -21,6 +21,7 @@ namespace ECS_Test.Core
         DirectMove = 11,
         NoMove = 12,
         DeleteEntity = 13,
-        InventoryAdd = 14
+        InventoryAdd = 14,
+        DeadEntity = 15
     }
 }

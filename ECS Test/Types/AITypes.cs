@@ -6,11 +6,10 @@ using System.Threading.Tasks;
 
 namespace ECS_Test.Types
 {
-    public enum CreatureTypes
+    public enum AITypes
     {
-        Human = 1,
-        Orc = 2,
-        Kobold = 3,
-        Troll = 4
+        Creature = 1,
+        Undead = 2,
+        Animal = 3
     }
 }

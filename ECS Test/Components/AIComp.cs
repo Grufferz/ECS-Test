@@ -21,10 +21,13 @@ namespace ECS_Test.Components
         public int LastBasher { get; set; }
         public bool Fleeing { get; set; }
         public int FleeingFrom { get; set; }
+        public int FleeCounter { get; set; }
         public List<int> ItemsAlreadySeen { get; set; }
         public Core.DungeonMap DMap { get; }
+        public Types.AITypes AiType { get; set; }
+        public Dictionary<int, RogueSharp.Point> TreasureMemory { get; set; }
 
-        public AIComp(Core.DungeonMap m)
+        public AIComp(Core.DungeonMap m, Types.AITypes aiT)
         {
             HasAI = true;
             CompType = Core.ComponentTypes.AI;
@@ -34,14 +37,17 @@ namespace ECS_Test.Components
             GotPath = false;
             AtTarget = false;
             TurnsSinceMove = 0;
-            Greedy = (RogueSharp.DiceNotation.Dice.Roll("1d10") > 4);
+            Greedy = (RogueSharp.DiceNotation.Dice.Roll("1d10") < 4);
             UnderAttack = false;
             CurrentEnemies = new HashSet<int>();
             LastBasher = 0;
             Fleeing = false;
+            FleeCounter = 0;
             ItemsAlreadySeen = new List<int>();
+            AiType = aiT;
 
-            AiState = Core.AIStates.Sleeping;
+            AiState = Core.AIStates.Wandering;
+            TreasureMemory = new Dictionary<int, RogueSharp.Point>();
         }
     }
 }

@@ -41,6 +41,28 @@ namespace ECS_Test.Core
             }
         }
 
+        public RogueSharp.Point GetTargetInRandomRoom(int curX, int curY)
+        {
+            RogueSharp.Point rp = new RogueSharp.Point();
+
+            RogueSharp.Point curPoint = new RogueSharp.Point(curX, curY);
+
+            Random rdm = new Random();
+            RogueSharp.Rectangle selectedRoom;
+            bool found = false;
+            while (!found)
+            {
+                selectedRoom = Rooms[rdm.Next(Rooms.Count)];
+                if (!selectedRoom.Contains(curPoint))
+                {
+                    rp = GetRandomWalkableLocationInRoom(selectedRoom);
+                    found = true;
+                }
+            }
+
+            return rp;
+        }
+
         public DoorHelper GetDoor(int x, int y)
         {
             return Doors.SingleOrDefault(d => d.X == x && d.Y == y);

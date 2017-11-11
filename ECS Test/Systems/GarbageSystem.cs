@@ -20,6 +20,7 @@ namespace ECS_Test.Systems
             _dungeonMap = dm;
             _entsToDelete = new List<int>();
             Core.EventBus.Subscribe(Core.EventTypes.DeleteEntity, (sender, e) => OnMessage(e));
+            Core.EventBus.Subscribe(Core.EventTypes.DeadEntity, (sender, e) => OnMessage(e));
         }
 
         public void Update()
@@ -46,6 +47,43 @@ namespace ECS_Test.Systems
 
                     _shedSystem.Remove(_entityManager.JustEntities[msg.entID]);
                     _entityManager.RemoveEntity(msg.entID);
+                    break;
+
+                case Core.EventTypes.DeadEntity:
+
+                    // leave corpse of entity
+
+                    Core.DeleteEntEventArgs dM = (Core.DeleteEntEventArgs)e;
+                    int entID = dM.entID;
+
+                    Components.PositionComp posC = (Components.PositionComp)_entityManager.GetSingleComponentByID(entID, Core.ComponentTypes.Position);
+                    _dungeonMap.SetIsWalkable(posC.X, posC.Y, true);
+
+                    Components.RenderComp rendC = (Components.RenderComp)_entityManager.GetSingleComponentByID(entID, Core.ComponentTypes.Render);
+                    rendC.Glyph = '%';
+                    rendC.Colour = RLNET.RLColor.Red;
+
+                    _shedSystem.Remove(_entityManager.JustEntities[entID]);
+
+                    _entityManager.RemoveCompFromEnt(entID, Core.ComponentTypes.Health);
+                    _entityManager.RemoveCompFromEnt(entID, Core.ComponentTypes.Actor);
+
+                    _entityManager.AddFurnitureToEnt(entID);
+
+                    // drop inventory
+                    Components.InventoryComp invC = (Components.InventoryComp)_entityManager.GetSingleComponentByID(entID, Core.ComponentTypes.Inventory);
+                    foreach(int droppedID in invC.Inventory)
+                    {
+                        Components.CollectableComp cc = (Components.CollectableComp)_entityManager.GetSingleComponentByID(droppedID, Core.ComponentTypes.Collectable);
+                        // only drop treasure for the moment
+                        //TODO - drop other items apart from treasure
+                        if (cc.Treasure)
+                        {
+                            _entityManager.AddPositionToEnt(droppedID, posC.X, posC.Y);
+                            cc.Active = true;
+                        }
+                    }
+
                     break;
 
             }

@@ -6,11 +6,9 @@ using System.Threading.Tasks;
 
 namespace ECS_Test.Types
 {
-    public enum CreatureTypes
+    public enum WeaponDmgTypes
     {
-        Human = 1,
-        Orc = 2,
-        Kobold = 3,
-        Troll = 4
+        Slashing = 1,
+        Crushing = 2
     }
 }

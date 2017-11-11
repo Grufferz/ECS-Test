@@ -23,6 +23,8 @@ namespace ECS_Test.Core
         Door = 4096,
         Collectable = 8192,
         Inventory = 16384,
-        Actor = 32768
+        Actor = 32768,
+        Weapon = 65536,
+        Furniture = 131072
     }
 }

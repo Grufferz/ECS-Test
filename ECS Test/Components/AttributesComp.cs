@@ -23,6 +23,7 @@ namespace ECS_Test.Components
         public string DmgBonus { get; set; }
         public int DmgMod { get; set; }
         public int Morale { get; set; }
+        public int MaxMorale { get; set; }
 
         public AttributesComp(int a, int si, int lev, int intBase )
         {
@@ -45,6 +46,7 @@ namespace ECS_Test.Components
             Luck = Power * 5;
 
             Morale = 100;
+            MaxMorale = Morale;
 
             int dmgSw = Strength + Size;
 
