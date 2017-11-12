@@ -25,6 +25,7 @@ namespace ECS_Test.Core
         Inventory = 16384,
         Actor = 32768,
         Weapon = 65536,
-        Furniture = 131072
+        Furniture = 131072,
+        Potion = 262144
     }
 }

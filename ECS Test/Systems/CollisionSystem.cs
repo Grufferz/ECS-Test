@@ -66,6 +66,7 @@ namespace ECS_Test.Systems
                                     = (Components.AttributesComp)_entityManager.GetSingleComponentByID(entIDRequestingMove, Core.ComponentTypes.Attributes);
 
                                 bool hit = false;
+                                // base damage = 1
                                 int dmg = 1;
 
                                 if (RogueSharp.DiceNotation.Dice.Roll("1d20") < attOfHitterComp.Strength)
@@ -80,17 +81,19 @@ namespace ECS_Test.Systems
                                     int dmgBonus = RogueSharp.DiceNotation.Dice.Roll(attOfHitterComp.DmgBonus);
                                     dmgBonus *= attOfHitterComp.DmgMod;
 
-                                    if (invComp.CurrentWeapon > 0)
+                                    if (invComp != null)
                                     {
-                                        Components.WeaponComp weapon 
-                                            = (Components.WeaponComp)_entityManager.GetSingleComponentByID(invComp.CurrentWeapon, Core.ComponentTypes.Weapon);
-                                        int dmgB = weapon.DamageBase;
-                                        string d = "1d" + dmgB.ToString();
-                                        dmg = RogueSharp.DiceNotation.Dice.Roll(d);
+                                        if (invComp.CurrentWeapon > 0)
+                                        {
+                                            Components.WeaponComp weapon
+                                                = (Components.WeaponComp)_entityManager.GetSingleComponentByID(invComp.CurrentWeapon, Core.ComponentTypes.Weapon);
 
+                                            dmg = RogueSharp.DiceNotation.Dice.Roll(weapon.DamageBase);
+
+                                        }
                                     }
                                     int totalDamage = dmgBonus + dmg;
-                                    if (totalDamage < 0){ totalDamage = 0; }
+                                    if (totalDamage <= 1){ totalDamage = 1; }
                                     hComp.Health -= totalDamage;
                                     if (hComp.Health < 0)
                                     {
@@ -155,14 +158,13 @@ namespace ECS_Test.Systems
                         Core.MoveOkayEventArgs msg = new Core.MoveOkayEventArgs(Core.EventTypes.MoveOK, details.EntRequestingMove, details.x, details.y);
                         Core.EventBus.Publish(Core.EventTypes.MoveOK, msg);
                     }
-                    //else
-                    //{
+                    else
+                    {
                     //    // fight on
-                    //    Core.NoMoveEventArgs msg 
-                    //        = new Core.NoMoveEventArgs(Core.EventTypes.NoMove, details.EntRequestingMove);
-                    //    Core.EventBus.Publish(Core.EventTypes.NoMove, msg);
+                        Core.NoMoveEventArgs msg = new Core.NoMoveEventArgs(Core.EventTypes.NoMove, details.EntRequestingMove);
+                        Core.EventBus.Publish(Core.EventTypes.NoMove, msg);
 
-                    //}
+                    }
                     break;
             }
         }

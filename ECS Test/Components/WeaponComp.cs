@@ -8,18 +8,20 @@ namespace ECS_Test.Components
 {
     class WeaponComp : Component
     {
-        public int DamageBase { get; set; }
+        public string DamageBase { get; set; }
         public Types.WeaponDmgTypes DmgType { get; set; }
-        public bool Magic;
-        public string Name;
+        public bool Magic { get; set; }
+        public string Name { get; set; }
+        public int MaxDmg { get; set; }
 
-        public WeaponComp(int dmg, Types.WeaponDmgTypes t, bool mag, string name)
+        public WeaponComp(string dmg, Types.WeaponDmgTypes t, bool mag, string name, int maxDmg)
         {
             CompType = Core.ComponentTypes.Weapon;
             Magic = mag;
             Name = name;
             DamageBase = dmg;
             DmgType = t;
+            MaxDmg = maxDmg;
         }
     }
 }

@@ -44,274 +44,481 @@ namespace ECS_Test.Systems
                     List<Components.Component> curEntCompList = _em.GetCompsByID(msg.entRequestingMove.UID);
                     Components.AIComp aiComp
                         = (Components.AIComp)curEntCompList.FirstOrDefault(x => x.CompType == Core.ComponentTypes.AI);
-                    Components.PositionComp posComp
-                        = (Components.PositionComp)curEntCompList.FirstOrDefault(x => x.CompType == Core.ComponentTypes.Position);
-                    Components.AttributesComp attComp
-                        = (Components.AttributesComp)curEntCompList.FirstOrDefault(x => x.CompType == Core.ComponentTypes.Attributes);
 
-
-                    IEnumerable<RogueSharp.ICell> fo = GetFOV(posComp.X, posComp.Y, attComp.Awareness, _dungeonMap);
-
-                    //IEnumerable<RogueSharp.ICell> fo;
-
-                    // are we under attack
-                    bool underAttack = aiComp.UnderAttack;
-
-                    // are we standing on anything?
-                    bool standing = AreWeStandingOnSomething(posComp);
-                    bool objPickedUp = false;
-
-                    // do we have a path
-                    bool gotPath = aiComp.GotPath;
-
-                    // are we asleep
-                    //bool sleeping = (aiComp.AiState == Core.AIStates.Sleeping);
-
-                    // sort out best weapon
-                    Components.InventoryComp invComp = (Components.InventoryComp)_em.GetSingleComponentByID(ent.UID, Core.ComponentTypes.Inventory);
-                    SetBestWeapon(invComp);
-
-
-                    if (aiComp.Fleeing)
+                    switch (aiComp.AiType)
                     {
-                        // run away!  Evaluate then either flee or stop fleeing
-                        Game.MessageLog.Add("WE are fleeing!");
+                        case Types.AITypes.Creature:
 
-                        if (aiComp.FleeCounter < 10)
-                        {
-                            int basherID = aiComp.LastBasher;
-                            //List<Components.Component> basherComps = _em.Entities[basherID];
-                            Components.PositionComp basherPosition = (Components.PositionComp)_em.GetSingleComponentByID(basherID, Core.ComponentTypes.Position);
-                            int reqX = posComp.X;
-                            int reqY = posComp.Y;
-                            if (basherPosition != null)
+                            Components.PositionComp posComp
+                                = (Components.PositionComp)curEntCompList.FirstOrDefault(x => x.CompType == Core.ComponentTypes.Position);
+                            Components.AttributesComp attComp
+                                = (Components.AttributesComp)curEntCompList.FirstOrDefault(x => x.CompType == Core.ComponentTypes.Attributes);
+
+
+                            IEnumerable<RogueSharp.ICell> fo = GetFOV(posComp.X, posComp.Y, attComp.Awareness, _dungeonMap);
+
+                            //IEnumerable<RogueSharp.ICell> fo;
+
+                            // are we under attack
+                            bool underAttack = aiComp.UnderAttack;
+
+                            // are we standing on anything?
+                            bool standing = AreWeStandingOnSomething(posComp);
+                            bool objPickedUp = false;
+
+                            // do we have a path
+                            bool gotPath = aiComp.GotPath;
+
+                            // are we asleep
+                            //bool sleeping = (aiComp.AiState == Core.AIStates.Sleeping);
+
+                            // sort out best weapon
+                            Components.InventoryComp invComp = (Components.InventoryComp)_em.GetSingleComponentByID(ent.UID, Core.ComponentTypes.Inventory);
+                            SetBestWeapon(invComp);
+
+
+                            if (aiComp.Fleeing)
                             {
-                                if (basherPosition.X < posComp.X)
-                                {
-                                    reqX = posComp.X + 1;
-                                }
-                                else if (basherPosition.X > posComp.X)
-                                {
-                                    reqX = posComp.X - 1;
-                                }
-                                if (basherPosition.Y < posComp.Y)
-                                {
-                                    reqY = posComp.Y + 1;
-                                }
-                                else if (basherPosition.Y > posComp.Y)
-                                {
-                                    reqY = posComp.Y - 1;
-                                }
+                                // run away!  Evaluate then either flee or stop fleeing
+                                Game.MessageLog.Add("WE are fleeing!");
 
-                                aiComp.FleeCounter++;
-
-                                RogueSharp.Point nm = new RogueSharp.Point(reqX, reqY);
-                                Core.DirectMoveEventArgs moveReq
-                                    = new Core.DirectMoveEventArgs(Core.EventTypes.DirectMove, ent, nm);
-                                Core.EventBus.Publish(Core.EventTypes.ActionReqMove, moveReq);
-                            }
-                        }
-                        else
-                        {
-                            aiComp.FleeCounter = 0;
-                            aiComp.Fleeing = false;
-                            ResetAI(aiComp);
-                        }
-
-
-                    }
-                    else
-                    {
-                        if (underAttack)
-                        {
-                            // under attack, fight or flee
-                            Game.MessageLog.Add($"We are under attack captain from {aiComp.LastBasher.ToString()}");
-                            bool enemyFound = false;
-                            bool coward = false;
-                            int xp = 0;
-                            int yp = 0;
-
-                            IEnumerable<RogueSharp.ICell> surroundingCells = _dungeonMap.GetBorderCellsInSquare(posComp.X, posComp.Y, 1);
-                            foreach(RogueSharp.ICell cell in surroundingCells)
-                            {
-                                //string lookUp = cell.X.ToString() + "-" + cell.Y.ToString();
-                                //if (_em.EntityPostionLookUp.ContainsKey(lookUp))
-                                HashSet<int> luPos = _em.Positions[cell.Y, cell.X];
-                                foreach( int i in luPos)
+                                if (aiComp.FleeCounter < 10)
                                 {
-                                    if (i == aiComp.LastBasher)
+                                    int basherID = aiComp.LastBasher;
+                                    //List<Components.Component> basherComps = _em.Entities[basherID];
+                                    Components.PositionComp basherPosition = (Components.PositionComp)_em.GetSingleComponentByID(basherID, Core.ComponentTypes.Position);
+                                    int reqX = posComp.X;
+                                    int reqY = posComp.Y;
+                                    if (basherPosition != null)
                                     {
-                                        enemyFound = true;
-                                        xp = cell.X;
-                                        yp = cell.Y;
-                                        break;
-                                    }
-                                }
-                            }
+                                        if (basherPosition.X < posComp.X)
+                                        {
+                                            reqX = posComp.X + 1;
+                                        }
+                                        else if (basherPosition.X > posComp.X)
+                                        {
+                                            reqX = posComp.X - 1;
+                                        }
+                                        if (basherPosition.Y < posComp.Y)
+                                        {
+                                            reqY = posComp.Y + 1;
+                                        }
+                                        else if (basherPosition.Y > posComp.Y)
+                                        {
+                                            reqY = posComp.Y - 1;
+                                        }
 
-                            if (enemyFound)
-                            {
+                                        aiComp.FleeCounter++;
 
-                                Components.AttributesComp otherAC 
-                                    = (Components.AttributesComp)_em.GetSingleComponentByID(aiComp.LastBasher, Core.ComponentTypes.Attributes);
-                                Components.HealthComp otherHC =
-                                    (Components.HealthComp)_em.GetSingleComponentByID(aiComp.LastBasher, Core.ComponentTypes.Health);
-
-                                Components.HealthComp ourHC =
-                                    (Components.HealthComp)_em.GetSingleComponentByID(ent.UID, Core.ComponentTypes.Health);
-
-                                if (attComp.Size < otherAC.Size)
-                                {
-                                    if (otherHC.Health > ourHC.Health)
-                                    {
-                                        coward = true;
-                                    }
-                                }
-
-                                if (!coward)
-                                {
-                                    Game.MessageLog.Add("Going for the kill!");
-                                    RogueSharp.Point nm = new RogueSharp.Point(xp, yp);
-                                    Core.DirectMoveEventArgs moveReq
-                                        = new Core.DirectMoveEventArgs(Core.EventTypes.DirectMove, ent, nm);
-                                    Core.EventBus.Publish(Core.EventTypes.ActionReqMove, moveReq);
-                                }
-                                else
-                                {
-                                    Game.MessageLog.Add("Coward!");
-                                    ResetAI(aiComp);
-                                }
-
-                            }
-
-                        }
-                        else
-                        {
-                            if (standing)
-                            {
-                                // standing on something, pick it up?
-                                Game.MessageLog.Add("we are standing on something or other");
-                                // have we seen it before
-
-                                int objCount = 0;
-                                List<int> pickUps = new List<int>();
-
-                                HashSet<int> hsOfids = _em.Positions[posComp.Y, posComp.X];
-                                foreach( int id in hsOfids)
-                                {
-                                    Components.CollectableComp cc 
-                                        = (Components.CollectableComp) _em.GetSingleComponentByID(id, Core.ComponentTypes.Collectable);
-
-                                    if (cc != null)
-                                    {
-                                        objCount++;
-                                        pickUps.Add(id);
-                                    }
-
-                                }
-
-                                //if (objsOfInterest.Count > 0)
-                                if (objCount > 0)
-                                {
-                                    // we have interesting objects, do something
-                                    
-                                    objPickedUp = true;
-
-                                    //int objToPick = rdm.Next(objsOfInterest.Count);
-                                    int ei = pickUps[rdm.Next(pickUps.Count)];
-
-                                    // remove item from memory of objects
-                                    if (aiComp.TreasureMemory.ContainsKey(ei))
-                                    {
-                                        aiComp.TreasureMemory.Remove(ei);
-                                    }
-
-                                    Core.InventoryAddEventArgs addEvent
-                                        = new Core.InventoryAddEventArgs(Core.EventTypes.InventoryAdd, ent.UID, ei);
-                                    Core.EventBus.Publish(Core.EventTypes.InventoryAdd, addEvent);
-                                }
-
-                            }
-
-                            if (gotPath & !objPickedUp)
-                            {
-                                // are we at the target?
-                                if (AtTarget(aiComp, posComp))
-                                {
-
-                                    ResetAI(aiComp);
-
-                                    _dungeonMap.SetCellProperties(posComp.X, posComp.Y, false, true);
-
-                                }
-                                else
-                                {
-                                    // follow path
-                                    if (!NextToTarget(aiComp, posComp))
-                                    {
-
-                                        FollowPath(aiComp, posComp, msg.entRequestingMove);
-                                        
-                                    }
-                                    else
-                                    {
-                                        // we're next to the target - move onto it
-                                        //Game.MessageLog.Add("Next To Target!!!!!");
-
-                                        RogueSharp.Point nm = new RogueSharp.Point(aiComp.Target.X, aiComp.Target.Y);
+                                        RogueSharp.Point nm = new RogueSharp.Point(reqX, reqY);
                                         Core.DirectMoveEventArgs moveReq
-                                            = new Core.DirectMoveEventArgs(Core.EventTypes.DirectMove, msg.entRequestingMove, nm);
+                                            = new Core.DirectMoveEventArgs(Core.EventTypes.DirectMove, ent, nm);
                                         Core.EventBus.Publish(Core.EventTypes.ActionReqMove, moveReq);
                                     }
                                 }
-
-                                    
-                            }
-                            else if (!objPickedUp)
-                            {
-                                // doing nothing, choose what to do...
-                                Game.MessageLog.Add("doing not much");
-
-                                //fo = GetFOV(posComp.X, posComp.Y, attComp.Awareness, _dungeonMap);
-
-                                Dictionary<int, RogueSharp.Point> treasureList = CanISeeTreasure(ent, fo);
-                                Game.MessageLog.Add($"I can see {treasureList.Count.ToString()} items of treasure");
-
-                                if (treasureList.Count > 0)
+                                else
                                 {
-                                    AddTreasureToMemory(treasureList, aiComp);
+                                    aiComp.FleeCounter = 0;
+                                    aiComp.Fleeing = false;
+                                    ResetAI(aiComp);
                                 }
 
-                                //if (aiComp.TreasureMemory.Count > 10)
-                                //{
-                                //    aiComp.AiState = Core.AIStates.WanderingPickingUp;
-                                //}
 
-                                switch (aiComp.AiState)
+                            }
+                            else
+                            {
+                                if (underAttack)
                                 {
-                                    case Core.AIStates.Wandering:
-                                        Game.MessageLog.Add("wandering");
-                                        bool target = GetRandomRoomTarget(posComp.X, posComp.Y, aiComp, _dungeonMap);
-                                        aiComp.GotPath = target;
-                                        //Core.NoMoveEventArgs nmEv = new Core.NoMoveEventArgs(Core.EventTypes.NoMove, msg.entRequestingMove);
-                                        //Core.EventBus.Publish(Core.EventTypes.NoMove, nmEv);
+                                    // under attack, fight or flee
+                                    Game.MessageLog.Add($"We are under attack captain from {aiComp.LastBasher.ToString()}");
+                                    bool enemyFound = false;
+                                    bool coward = false;
+                                    int xp = 0;
+                                    int yp = 0;
 
-                                        break;
-                                    case Core.AIStates.WanderingPickingUp:
-                                        Game.MessageLog.Add("collecting treasure");
-
-                                        RogueSharp.Point posOfGold = GetNearestTreasure(posComp, aiComp, _dungeonMap);
-                                        if (posOfGold.X != posComp.X && posOfGold.Y != posComp.Y)
+                                    IEnumerable<RogueSharp.ICell> surroundingCells = _dungeonMap.GetBorderCellsInSquare(posComp.X, posComp.Y, 1);
+                                    foreach (RogueSharp.ICell cell in surroundingCells)
+                                    {
+                                        //string lookUp = cell.X.ToString() + "-" + cell.Y.ToString();
+                                        //if (_em.EntityPostionLookUp.ContainsKey(lookUp))
+                                        HashSet<int> luPos = _em.Positions[cell.Y, cell.X];
+                                        foreach (int i in luPos)
                                         {
-                                            bool goldFound = SetPathToTarget(ent, posOfGold);
-                                            aiComp.GotPath = goldFound;
+                                            if (i == aiComp.LastBasher)
+                                            {
+                                                enemyFound = true;
+                                                xp = cell.X;
+                                                yp = cell.Y;
+                                                break;
+                                            }
+                                        }
+                                    }
+
+                                    if (enemyFound)
+                                    {
+
+                                        Components.AttributesComp otherAC
+                                            = (Components.AttributesComp)_em.GetSingleComponentByID(aiComp.LastBasher, Core.ComponentTypes.Attributes);
+                                        Components.HealthComp otherHC =
+                                            (Components.HealthComp)_em.GetSingleComponentByID(aiComp.LastBasher, Core.ComponentTypes.Health);
+
+                                        Components.HealthComp ourHC =
+                                            (Components.HealthComp)_em.GetSingleComponentByID(ent.UID, Core.ComponentTypes.Health);
+
+                                        if (attComp.Size < otherAC.Size)
+                                        {
+                                            if ((otherHC.Health / otherHC.MaxHealth) >= (ourHC.Health / ourHC.MaxHealth))
+                                            {
+                                                coward = true;
+                                            }
                                         }
 
-                                        break;
+                                        if (!coward)
+                                        {
+                                            Game.MessageLog.Add("Going for the kill!");
+                                            RogueSharp.Point nm = new RogueSharp.Point(xp, yp);
+                                            Core.DirectMoveEventArgs moveReq
+                                                = new Core.DirectMoveEventArgs(Core.EventTypes.DirectMove, ent, nm);
+                                            Core.EventBus.Publish(Core.EventTypes.ActionReqMove, moveReq);
+                                        }
+                                        else
+                                        {
+                                            Game.MessageLog.Add("Coward!");
+                                            ResetAI(aiComp);
+                                            aiComp.Fleeing = true;
+                                        }
+
+                                    }
+
+                                }
+                                else
+                                {
+                                    if (standing)
+                                    {
+                                        // standing on something, pick it up?
+                                        Game.MessageLog.Add("we are standing on something or other");
+                                        // have we seen it before
+
+                                        int objCount = 0;
+                                        List<int> pickUps = new List<int>();
+
+                                        HashSet<int> hsOfids = _em.Positions[posComp.Y, posComp.X];
+                                        foreach (int id in hsOfids)
+                                        {
+                                            Components.CollectableComp cc
+                                                = (Components.CollectableComp)_em.GetSingleComponentByID(id, Core.ComponentTypes.Collectable);
+
+                                            if (cc != null)
+                                            {
+                                                objCount++;
+                                                pickUps.Add(id);
+                                            }
+
+                                        }
+
+                                        //if (objsOfInterest.Count > 0)
+                                        if (objCount > 0)
+                                        {
+                                            // we have interesting objects, do something
+
+                                            objPickedUp = true;
+
+                                            //int objToPick = rdm.Next(objsOfInterest.Count);
+                                            int ei = pickUps[rdm.Next(pickUps.Count)];
+
+                                            // remove item from memory of objects
+                                            if (aiComp.TreasureMemory.ContainsKey(ei))
+                                            {
+                                                aiComp.TreasureMemory.Remove(ei);
+                                            }
+
+                                            Core.InventoryAddEventArgs addEvent
+                                                = new Core.InventoryAddEventArgs(Core.EventTypes.InventoryAdd, ent.UID, ei);
+                                            Core.EventBus.Publish(Core.EventTypes.InventoryAdd, addEvent);
+                                        }
+
+                                    }
+
+                                    if (gotPath & !objPickedUp)
+                                    {
+                                        // are we at the target?
+                                        if (AtTarget(aiComp, posComp))
+                                        {
+
+                                            ResetAI(aiComp);
+
+                                            _dungeonMap.SetCellProperties(posComp.X, posComp.Y, false, true);
+
+                                        }
+                                        else
+                                        {
+                                            // follow path
+                                            if (!NextToTarget(aiComp, posComp))
+                                            {
+
+                                                FollowPath(aiComp, posComp, msg.entRequestingMove);
+
+                                            }
+                                            else
+                                            {
+                                                // we're next to the target - move onto it
+                                                //Game.MessageLog.Add("Next To Target!!!!!");
+
+                                                RogueSharp.Point nm = new RogueSharp.Point(aiComp.Target.X, aiComp.Target.Y);
+                                                Core.DirectMoveEventArgs moveReq
+                                                    = new Core.DirectMoveEventArgs(Core.EventTypes.DirectMove, msg.entRequestingMove, nm);
+                                                Core.EventBus.Publish(Core.EventTypes.ActionReqMove, moveReq);
+                                            }
+                                        }
+
+
+                                    }
+                                    else if (!objPickedUp)
+                                    {
+                                        // doing nothing, choose what to do...
+                                        Game.MessageLog.Add("doing not much");
+
+                                        //fo = GetFOV(posComp.X, posComp.Y, attComp.Awareness, _dungeonMap);
+
+                                        Dictionary<int, RogueSharp.Point> treasureList = CanISeeTreasure(ent, fo);
+                                        Game.MessageLog.Add($"I can see {treasureList.Count.ToString()} items of treasure");
+
+                                        if (treasureList.Count > 0)
+                                        {
+                                            AddTreasureToMemory(treasureList, aiComp);
+                                        }
+
+                                        //if (aiComp.TreasureMemory.Count > 10)
+                                        //{
+                                        //    aiComp.AiState = Core.AIStates.WanderingPickingUp;
+                                        //}
+
+                                        switch (aiComp.AiState)
+                                        {
+                                            case Core.AIStates.Wandering:
+                                                Game.MessageLog.Add("wandering");
+                                                bool target = GetRandomRoomTarget(posComp.X, posComp.Y, aiComp, _dungeonMap);
+                                                aiComp.GotPath = target;
+                                                //Core.NoMoveEventArgs nmEv = new Core.NoMoveEventArgs(Core.EventTypes.NoMove, msg.entRequestingMove);
+                                                //Core.EventBus.Publish(Core.EventTypes.NoMove, nmEv);
+
+                                                break;
+                                            case Core.AIStates.WanderingPickingUp:
+                                                Game.MessageLog.Add("collecting treasure");
+
+                                                RogueSharp.Point posOfGold = GetNearestTreasure(posComp, aiComp, _dungeonMap);
+                                                if (posOfGold.X != posComp.X && posOfGold.Y != posComp.Y)
+                                                {
+                                                    bool goldFound = SetPathToTarget(ent, posOfGold);
+                                                    aiComp.GotPath = goldFound;
+                                                }
+
+                                                break;
+                                        }
+                                    }
                                 }
                             }
-                        }
+                            break;
+
+                        case Types.AITypes.Animal:
+
+                            Components.PositionComp animalPosComp = (Components.PositionComp)curEntCompList.FirstOrDefault(x => x.CompType == Core.ComponentTypes.Position);
+                            Components.AttributesComp animaAttComp
+                                = (Components.AttributesComp)curEntCompList.FirstOrDefault(x => x.CompType == Core.ComponentTypes.Attributes);
+
+
+                            IEnumerable<RogueSharp.ICell> animalFOV = GetFOV(animalPosComp.X, animalPosComp.Y, animaAttComp.Awareness, _dungeonMap);
+
+                            //IEnumerable<RogueSharp.ICell> fo;
+
+                            // are we under attack
+                            bool animalUndAttack = aiComp.UnderAttack;
+
+                            // do we have a path
+                            bool animalGotPath = aiComp.GotPath;
+
+
+                            if (aiComp.Fleeing)
+                            {
+                                // run away!  Evaluate then either flee or stop fleeing
+                                Game.MessageLog.Add("WE are fleeing!");
+
+                                if (aiComp.FleeCounter < 10)
+                                {
+                                    int basherID = aiComp.LastBasher;
+                                    //List<Components.Component> basherComps = _em.Entities[basherID];
+                                    Components.PositionComp basherPosition = (Components.PositionComp)_em.GetSingleComponentByID(basherID, Core.ComponentTypes.Position);
+                                    int reqX = animalPosComp.X;
+                                    int reqY = animalPosComp.Y;
+                                    if (basherPosition != null)
+                                    {
+                                        if (basherPosition.X < animalPosComp.X)
+                                        {
+                                            reqX = animalPosComp.X + 1;
+                                        }
+                                        else if (basherPosition.X > animalPosComp.X)
+                                        {
+                                            reqX = animalPosComp.X - 1;
+                                        }
+                                        if (basherPosition.Y < animalPosComp.Y)
+                                        {
+                                            reqY = animalPosComp.Y + 1;
+                                        }
+                                        else if (basherPosition.Y > animalPosComp.Y)
+                                        {
+                                            reqY = animalPosComp.Y - 1;
+                                        }
+
+                                        aiComp.FleeCounter++;
+
+                                        RogueSharp.Point nm = new RogueSharp.Point(reqX, reqY);
+                                        Core.DirectMoveEventArgs moveReq
+                                            = new Core.DirectMoveEventArgs(Core.EventTypes.DirectMove, ent, nm);
+                                        Core.EventBus.Publish(Core.EventTypes.ActionReqMove, moveReq);
+                                    }
+                                }
+                                else
+                                {
+                                    aiComp.FleeCounter = 0;
+                                    aiComp.Fleeing = false;
+                                    ResetAI(aiComp);
+                                }
+
+
+                            }
+                            else
+                            {
+                                if (animalUndAttack)
+                                {
+                                    // under attack, fight or flee
+                                    Game.MessageLog.Add($"We are under attack captain from {aiComp.LastBasher.ToString()}");
+                                    bool enemyFound = false;
+                                    bool coward = false;
+                                    int xp = 0;
+                                    int yp = 0;
+
+                                    IEnumerable<RogueSharp.ICell> surroundingCells = _dungeonMap.GetBorderCellsInSquare(animalPosComp.X, animalPosComp.Y, 1);
+                                    foreach (RogueSharp.ICell cell in surroundingCells)
+                                    {
+                                        //string lookUp = cell.X.ToString() + "-" + cell.Y.ToString();
+                                        //if (_em.EntityPostionLookUp.ContainsKey(lookUp))
+                                        HashSet<int> luPos = _em.Positions[cell.Y, cell.X];
+                                        foreach (int i in luPos)
+                                        {
+                                            if (i == aiComp.LastBasher)
+                                            {
+                                                enemyFound = true;
+                                                xp = cell.X;
+                                                yp = cell.Y;
+                                                break;
+                                            }
+                                        }
+                                    }
+
+                                    if (enemyFound)
+                                    {
+
+                                        Components.AttributesComp animalAttComp
+                                            = (Components.AttributesComp)curEntCompList.FirstOrDefault(x => x.CompType == Core.ComponentTypes.Attributes);
+
+                                        Components.AttributesComp otherAC
+                                            = (Components.AttributesComp)_em.GetSingleComponentByID(aiComp.LastBasher, Core.ComponentTypes.Attributes);
+                                        Components.HealthComp otherHC =
+                                            (Components.HealthComp)_em.GetSingleComponentByID(aiComp.LastBasher, Core.ComponentTypes.Health);
+
+                                        Components.HealthComp ourHC =
+                                            (Components.HealthComp)_em.GetSingleComponentByID(ent.UID, Core.ComponentTypes.Health);
+
+                                        if (animalAttComp.Size < otherAC.Size)
+                                        {
+                                            if ((otherHC.Health / otherHC.MaxHealth) >= (ourHC.Health / ourHC.MaxHealth))
+                                            {
+                                                coward = true;
+                                            }
+                                        }
+
+                                        if (!coward)
+                                        {
+                                            Game.MessageLog.Add("Going for the kill!");
+                                            RogueSharp.Point nm = new RogueSharp.Point(xp, yp);
+                                            Core.DirectMoveEventArgs moveReq
+                                                = new Core.DirectMoveEventArgs(Core.EventTypes.DirectMove, ent, nm);
+                                            Core.EventBus.Publish(Core.EventTypes.ActionReqMove, moveReq);
+                                        }
+                                        else
+                                        {
+                                            Game.MessageLog.Add("Coward!");
+                                            ResetAI(aiComp);
+                                            aiComp.Fleeing = true;
+                                        }
+
+                                    }
+
+                                }
+                                else
+                                {
+                                    
+
+                                    if (animalGotPath)
+                                    {
+                                        // are we at the target?
+                                        if (AtTarget(aiComp, animalPosComp))
+                                        {
+
+                                            ResetAI(aiComp);
+
+                                            _dungeonMap.SetCellProperties(animalPosComp.X, animalPosComp.Y, false, true);
+
+                                        }
+                                        else
+                                        {
+                                            // follow path
+                                            if (!NextToTarget(aiComp, animalPosComp))
+                                            {
+
+                                                FollowPath(aiComp, animalPosComp, msg.entRequestingMove);
+
+                                            }
+                                            else
+                                            {
+                                                // we're next to the target - move onto it
+                                                //Game.MessageLog.Add("Next To Target!!!!!");
+
+                                                RogueSharp.Point nm = new RogueSharp.Point(aiComp.Target.X, aiComp.Target.Y);
+                                                Core.DirectMoveEventArgs moveReq
+                                                    = new Core.DirectMoveEventArgs(Core.EventTypes.DirectMove, msg.entRequestingMove, nm);
+                                                Core.EventBus.Publish(Core.EventTypes.ActionReqMove, moveReq);
+                                            }
+                                        }
+
+
+                                    }
+                                    else
+                                    {
+                                        // doing nothing, choose what to do...
+                                        Game.MessageLog.Add("doing not much");
+
+                                        //fo = GetFOV(posComp.X, posComp.Y, attComp.Awareness, _dungeonMap);
+
+                                        switch (aiComp.AiState)
+                                        {
+                                            case Core.AIStates.Wandering:
+                                                Game.MessageLog.Add("wandering");
+                                                bool target = GetRandomRoomTarget(animalPosComp.X, animalPosComp.Y, aiComp, _dungeonMap);
+                                                aiComp.GotPath = target;
+                                                //Core.NoMoveEventArgs nmEv = new Core.NoMoveEventArgs(Core.EventTypes.NoMove, msg.entRequestingMove);
+                                                //Core.EventBus.Publish(Core.EventTypes.NoMove, nmEv);
+
+                                                break;
+                                        }
+                                    }
+                                }
+                                break;
+
+                            }
+                            break;
                     }
+
 
                     aiComp.UnderAttack = false;
                     break;
@@ -711,7 +918,7 @@ namespace ECS_Test.Systems
                 {
                     Components.WeaponComp weComp
                         = (Components.WeaponComp)_em.GetSingleComponentByID(invID, Core.ComponentTypes.Weapon);
-                    if (weComp.DamageBase > curDmg)
+                    if (weComp.MaxDmg > curDmg)
                     {
                         selectedID = invID;
                     }

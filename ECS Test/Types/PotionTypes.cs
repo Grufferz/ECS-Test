@@ -6,12 +6,10 @@ using System.Threading.Tasks;
 
 namespace ECS_Test.Types
 {
-    public enum CreatureTypes
+    public enum PotionTypes
     {
-        Human = 1,
-        Orc = 2,
-        Kobold = 3,
-        Troll = 4,
-        Rat = 5
+        Health = 1,
+        Magic = 2,
+        Strength = 3
     }
 }

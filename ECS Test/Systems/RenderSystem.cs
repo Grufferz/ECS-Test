@@ -129,7 +129,11 @@ namespace ECS_Test.Systems
                             statsConsole.SetBackColor(xPos + 2 + width, yPos, remainingWidth, 1, Core.Swatch.PrimaryDarkest);
                             statsConsole.Print(xPos + 2, yPos, $": {healthStat.Health.ToString()}", Core.Swatch.DbLight);
                             yPos++;
-                            statsConsole.Print(xPos, yPos, $"Carrying {invComp.Treasure.Count.ToString()} Gold", rendComp.Colour);
+                            if (invComp != null)
+                            {
+                                statsConsole.Print(xPos, yPos, $"Carrying {invComp.Treasure.Count.ToString()} Gold", rendComp.Colour);
+                                
+                            }
                             yPos = yPos + 2;
                         }
                     }

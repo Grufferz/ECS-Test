@@ -53,7 +53,7 @@ namespace ECS_Test.Systems
             int ind = Game.Random.Next(CreatNames.Count - 1);
             string creatureName = CreatNames[ind];
 
-            int entType = RogueSharp.DiceNotation.Dice.Roll("1d10");
+            int entType = RogueSharp.DiceNotation.Dice.Roll("1d20");
             if ( entType <= 2 )
             {
                 er = Core.EntityFactory.CreateTroll(x, y, creatureName, m);
@@ -62,9 +62,13 @@ namespace ECS_Test.Systems
             {
                 er = Core.EntityFactory.CreateOrc(x, y, creatureName, m);
             }
-            else
+            else if (entType >= 6 && entType < 14)
             {
                 er = Core.EntityFactory.CreateKobold(x, y, creatureName, m);
+            }
+            else
+            {
+                er = Core.EntityFactory.CreateRat(x, y, creatureName, m);
             }
 
             //add entity to entity dict
@@ -89,7 +93,31 @@ namespace ECS_Test.Systems
 
             //add weapon to entity
             AddWeaponToEntity(e.UID);
+            if (RogueSharp.DiceNotation.Dice.Roll("1d10") > 8)
+            {
+                AddPotionToEntity(e.UID);
+            }
 
+        }
+
+        public void AddPotionToEntity(int eid)
+        {
+            Core.Entity e = new Core.Entity(_entityID);
+            Core.EntityReturner er;
+
+            int potionID = e.UID;
+
+            er = Core.EntityFactory.CreateHealthPotion();
+
+            Entities.Add(_entityID, er.ComponentList);
+            EntityBitLookUp.Add(_entityID, er.LookUpBit);
+            JustEntities.Add(_entityID, e);
+
+            _entityID++;
+
+            // add potion to entity
+            Core.InventoryAddEventArgs addEvent = new Core.InventoryAddEventArgs(Core.EventTypes.InventoryAdd, eid, potionID);
+            Core.EventBus.Publish(Core.EventTypes.InventoryAdd, addEvent);
         }
 
         public void AddWeaponToEntity(int eid)

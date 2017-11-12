@@ -61,29 +61,32 @@ namespace ECS_Test.Systems
 
                     Components.RenderComp rendC = (Components.RenderComp)_entityManager.GetSingleComponentByID(entID, Core.ComponentTypes.Render);
                     rendC.Glyph = '%';
-                    rendC.Colour = RLNET.RLColor.Red;
+                    rendC.Colour = RLNET.RLColor.LightRed;
 
                     _shedSystem.Remove(_entityManager.JustEntities[entID]);
 
                     _entityManager.RemoveCompFromEnt(entID, Core.ComponentTypes.Health);
                     _entityManager.RemoveCompFromEnt(entID, Core.ComponentTypes.Actor);
+                    _entityManager.RemoveCompFromEnt(entID, Core.ComponentTypes.Schedulable);
 
                     _entityManager.AddFurnitureToEnt(entID);
 
                     // drop inventory
                     Components.InventoryComp invC = (Components.InventoryComp)_entityManager.GetSingleComponentByID(entID, Core.ComponentTypes.Inventory);
-                    foreach(int droppedID in invC.Inventory)
+                    if (invC != null)
                     {
-                        Components.CollectableComp cc = (Components.CollectableComp)_entityManager.GetSingleComponentByID(droppedID, Core.ComponentTypes.Collectable);
-                        // only drop treasure for the moment
-                        //TODO - drop other items apart from treasure
-                        if (cc.Treasure)
+                        foreach (int droppedID in invC.Inventory)
                         {
-                            _entityManager.AddPositionToEnt(droppedID, posC.X, posC.Y);
-                            cc.Active = true;
+                            Components.CollectableComp cc = (Components.CollectableComp)_entityManager.GetSingleComponentByID(droppedID, Core.ComponentTypes.Collectable);
+                            // only drop treasure for the moment
+                            //TODO - drop other items apart from treasure
+                            if (cc.Treasure)
+                            {
+                                _entityManager.AddPositionToEnt(droppedID, posC.X, posC.Y);
+                                cc.Active = true;
+                            }
                         }
                     }
-
                     break;
 
             }

@@ -26,8 +26,9 @@ namespace ECS_Test.Components
         public Core.DungeonMap DMap { get; }
         public Types.AITypes AiType { get; set; }
         public Dictionary<int, RogueSharp.Point> TreasureMemory { get; set; }
+        public RogueSharp.Point HomeSpot { get; set; }
 
-        public AIComp(Core.DungeonMap m, Types.AITypes aiT)
+        public AIComp(Core.DungeonMap m, Types.AITypes aiT, RogueSharp.Point startPoint)
         {
             HasAI = true;
             CompType = Core.ComponentTypes.AI;

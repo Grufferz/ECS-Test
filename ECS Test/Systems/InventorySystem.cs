@@ -39,15 +39,6 @@ namespace ECS_Test.Systems
                     Components.InventoryComp invComp 
                         = (Components.InventoryComp) _entityManager.GetSingleComponentByID(entPickingUp, Core.ComponentTypes.Inventory);
 
-                    //Components.InventoryComp invComp 
-                    //   = (Components.InventoryComp)entComps.Find(x => x.CompType == Core.ComponentTypes.Inventory);
-
-
-                    //bool canIPickUp = invComp != null;
-                    //Game.MessageLog.Add($"________________________________CAN I PICK UP ====== {canIPickUp.ToString()}");
-
-
-
                     if (invComp != null)
                     {
 
@@ -74,16 +65,12 @@ namespace ECS_Test.Systems
                                     invComp.ValueCarried += vC.ItemValue;
                                 }
 
-                                // remove position and collectable comps from picked up object
+                                // remove position comps from picked up object
                                 _entityManager.RemoveCompFromEnt(pickedUpObj, Core.ComponentTypes.Position);
                                 collectComp.Active = false;
-                                //_entityManager.RemoveCompFromEnt(pickedUpObj, Core.ComponentTypes.Collectable);
                                 _entityManager.RemoveEntFromPosition(posComp.X, posComp.Y, pickedUpObj);
 
-
-                                //pickedUpObjComps.Remove(posComp);
                                 invComp.Treasure.Add(pickedUpObj);
-                                // Game.MessageLog.Add("picking up treasure ==========================================================================================");
 
                             }
                             else

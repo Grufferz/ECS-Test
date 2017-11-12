@@ -18,6 +18,7 @@ namespace ECS_Test.Components
         public CollectableComp(int quant, bool stack, bool treas, Types.ItemTypes it, bool act)
         {
             CompType = Core.ComponentTypes.Collectable;
+
             Treasure = treas;
             Quantity = quant;
             Stackable = stack;

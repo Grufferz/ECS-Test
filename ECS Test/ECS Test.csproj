@@ -67,6 +67,7 @@
     <Compile Include="Components\MagicComp.cs" />
     <Compile Include="Components\MonterStatsComp.cs" />
     <Compile Include="Components\PositionComp.cs" />
+    <Compile Include="Components\PotionComp.cs" />
     <Compile Include="Components\RenderComp.cs" />
     <Compile Include="Components\SchedulableComp.cs" />
     <Compile Include="Components\StairComp.cs" />
@@ -124,6 +125,7 @@
     <Compile Include="Types\AITypes.cs" />
     <Compile Include="Types\CreatureTypes.cs" />
     <Compile Include="Types\ItemTypes.cs" />
+    <Compile Include="Types\PotionTypes.cs" />
     <Compile Include="Types\WeaponDmgTypes.cs" />
   </ItemGroup>
   <ItemGroup>
