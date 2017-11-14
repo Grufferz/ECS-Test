@@ -234,6 +234,43 @@ namespace ECS_Test.Core
             return er;
         }
 
+        public static EntityReturner CreateHealthPotionAtLocation(int x, int y)
+        {
+            List<Components.Component> compList = new List<Components.Component>();
+
+            // set bitwise to 0
+            int checker = 0;
+
+            Components.PositionComp positionComp = new Components.PositionComp(x, y);
+            compList.Add(positionComp);
+            checker = checker | (int)ComponentTypes.Position;
+
+            Components.PotionComp potComp = new Components.PotionComp(Types.PotionTypes.Health);
+            compList.Add(potComp);
+            checker = checker | (int)ComponentTypes.Potion;
+
+            Components.UseableComp useComp = new Components.UseableComp();
+            compList.Add(useComp);
+            checker = checker | (int)ComponentTypes.Useable;
+
+            Components.RenderComp rendComp = new Components.RenderComp('!', RLNET.RLColor.Yellow);
+            compList.Add(rendComp);
+            checker = checker | (int)Core.ComponentTypes.Render;
+
+            Components.ItemValueComp valComp = new Components.ItemValueComp(RogueSharp.DiceNotation.Dice.Roll("1d6"));
+            compList.Add(valComp);
+            checker = checker | (int)Core.ComponentTypes.ItemValue;
+
+            Components.CollectableComp collComp
+                = new Components.CollectableComp(1, false, false, Types.ItemTypes.Potion, true);
+            compList.Add(collComp);
+            checker = checker | (int)Core.ComponentTypes.Collectable;
+
+            EntityReturner er = new EntityReturner(checker, compList);
+            return er;
+        }
+
+
         public static EntityReturner CreateSword()
         {
             List<Components.Component> compList = new List<Components.Component>();
@@ -390,13 +427,65 @@ namespace ECS_Test.Core
             compList.Add(aiComp);
             checker = checker | (int)ComponentTypes.AI;
 
-            int speed = RogueSharp.DiceNotation.Dice.Roll("1d3") + 2;
+            int speed = RogueSharp.DiceNotation.Dice.Roll("1d3") + 1;
             Components.SchedulableComp shedComp = new Components.SchedulableComp(speed);
             compList.Add(shedComp);
             checker = checker | (int)ComponentTypes.Schedulable;
 
             Components.CreatureDetailsComp detailsComp
                 = new Components.CreatureDetailsComp("Rat", name, Types.CreatureTypes.Rat);
+            compList.Add(detailsComp);
+            checker = checker | (int)ComponentTypes.CreatureDetails;
+
+            EntityReturner er = new EntityReturner(checker, compList);
+            return er;
+        }
+
+        public static EntityReturner CreateZombie(int xPos, int yPos, string name, DungeonMap m)
+        {
+            List<Components.Component> compList = new List<Components.Component>();
+            //stats
+            int lev = 2;
+            int size = 4 + RogueSharp.DiceNotation.Dice.Roll("1d3");
+            int intBase = 1;
+
+            // set bitwise to 0
+            int checker = 0;
+
+            Components.PositionComp positionComp = new Components.PositionComp(xPos, yPos);
+            compList.Add(positionComp);
+            checker = checker | (int)ComponentTypes.Position;
+
+            Components.RenderComp rendComp = new Components.RenderComp('z', RLNET.RLColor.Cyan);
+            compList.Add(rendComp);
+            checker = checker | (int)ComponentTypes.Render;
+
+            Components.AttributesComp attComp = new Components.AttributesComp(12, size, lev, intBase);
+            compList.Add(attComp);
+            checker = checker | (int)ComponentTypes.Attributes;
+
+            //get base factor for health
+            int hp = ((int)(size + attComp.Hardiness) / 2) * lev;
+
+            Components.HealthComp healthComp = new Components.HealthComp(hp);
+            compList.Add(healthComp);
+            checker = checker | (int)ComponentTypes.Health;
+
+            Components.ActorComp actComp = new Components.ActorComp();
+            compList.Add(actComp);
+            checker = checker | (int)ComponentTypes.Actor;
+
+            Components.AIComp aiComp = new Components.AIComp(m, Types.AITypes.Undead, new RogueSharp.Point(xPos, yPos));
+            compList.Add(aiComp);
+            checker = checker | (int)ComponentTypes.AI;
+
+            int speed = RogueSharp.DiceNotation.Dice.Roll("1d6") + 4;
+            Components.SchedulableComp shedComp = new Components.SchedulableComp(speed);
+            compList.Add(shedComp);
+            checker = checker | (int)ComponentTypes.Schedulable;
+
+            Components.CreatureDetailsComp detailsComp
+                = new Components.CreatureDetailsComp("Zombie", name, Types.CreatureTypes.Zombie);
             compList.Add(detailsComp);
             checker = checker | (int)ComponentTypes.CreatureDetails;
 

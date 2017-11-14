@@ -150,13 +150,20 @@ namespace ECS_Test.Systems
             {
                 if (RogueSharp.DiceNotation.Dice.Roll("1d10") < 7)
                 {
-                    int amountOfGold = RogueSharp.DiceNotation.Dice.Roll("1d8");
+                    int amountOfGold = RogueSharp.DiceNotation.Dice.Roll("1d6");
                     for (int i = 0; i < amountOfGold; i++)
                     {
                         RogueSharp.Point randRoomLoc = _map.GetRandomWalkableLocationInRoom(room);
                         if (randRoomLoc != null)
                         {
-                            em.AddTreasure(randRoomLoc.X, randRoomLoc.Y);
+                            if (RogueSharp.DiceNotation.Dice.Roll("1d10") < 8)
+                            {
+                                em.AddTreasure(randRoomLoc.X, randRoomLoc.Y);
+                            }
+                            else
+                            {
+                                em.AddPotionAtLocation(randRoomLoc.X, randRoomLoc.Y);
+                            }
                         }
                     }
                 }

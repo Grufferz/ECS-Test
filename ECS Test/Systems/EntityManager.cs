@@ -62,9 +62,13 @@ namespace ECS_Test.Systems
             {
                 er = Core.EntityFactory.CreateOrc(x, y, creatureName, m);
             }
-            else if (entType >= 6 && entType < 14)
+            else if (entType >= 6 && entType < 12)
             {
                 er = Core.EntityFactory.CreateKobold(x, y, creatureName, m);
+            }
+            else if (entType >= 12 && entType < 15)
+            {
+                er = Core.EntityFactory.CreateZombie(x, y, creatureName, m);
             }
             else
             {
@@ -181,6 +185,24 @@ namespace ECS_Test.Systems
             JustEntities.Add(_entityID, e);
 
             //add to PositionLookUp
+            AddEntToPosition(x, y, e.UID);
+
+            // inc entityID
+            _entityID++;
+        }
+
+        public void AddPotionAtLocation(int x, int y)
+        {
+            var e = new Core.Entity(_entityID);
+            // List<Components.Component> compList = new List<Components.Component>();
+
+            Core.EntityReturner er = Core.EntityFactory.CreateHealthPotionAtLocation(x, y);
+
+            //add entity to entity dic
+            Entities.Add(_entityID, er.ComponentList);
+            EntityBitLookUp.Add(_entityID, er.LookUpBit);
+            JustEntities.Add(_entityID, e);
+
             AddEntToPosition(x, y, e.UID);
 
             // inc entityID
@@ -401,6 +423,18 @@ namespace ECS_Test.Systems
             
 
             AddEntToPosition(x, y, eid);
+        }
+
+        public void AddDeadComp(int eid)
+        {
+            Components.DeadComp dc = new Components.DeadComp();
+            List<Components.Component> entComps = Entities[eid];
+            entComps.Add(dc);
+
+            int checker = EntityBitLookUp[eid];
+            checker = checker | (int)Core.ComponentTypes.Dead;
+            EntityBitLookUp[eid] = checker;
+
         }
 
         public void AddFurnitureToEnt(int eid)

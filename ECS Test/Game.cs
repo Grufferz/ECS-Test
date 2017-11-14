@@ -84,7 +84,6 @@ namespace ECS_Test
             SystemsManager = new Systems.SystemManager(EntityManager);
             RenderSystem = new Systems.RenderSystem(EntityManager);
             ShedSystem = new Systems.SchedulingSystem();
-            CollisionSystem = new Systems.CollisionSystem(EntityManager);
             UseSystem = new Systems.UseSystem(EntityManager);
             InventorySystem = new Systems.InventorySystem(EntityManager);
 
@@ -99,6 +98,7 @@ namespace ECS_Test
                 _mapHeight, 25, 20, 7, _mapLevel, EntityManager);
             DungeonMap = mapGenerator.CreateMap();
             MovementSystem = new Systems.MovementSystem(DungeonMap, EntityManager);
+            CollisionSystem = new Systems.CollisionSystem(EntityManager, DungeonMap);
 
             // place monsters
             mapGenerator.PlaceMonsters(EntityManager);

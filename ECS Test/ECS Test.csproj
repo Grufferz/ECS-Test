@@ -60,6 +60,7 @@
     <Compile Include="Components\CollectableComp.cs" />
     <Compile Include="Components\Component.cs" />
     <Compile Include="Components\CreatureDetailsComp.cs" />
+    <Compile Include="Components\DeadComp.cs" />
     <Compile Include="Components\DoorComp.cs" />
     <Compile Include="Components\FurnitureComp.cs" />
     <Compile Include="Components\HealthComp.cs" />

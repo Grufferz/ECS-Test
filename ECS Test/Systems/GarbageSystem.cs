@@ -63,6 +63,10 @@ namespace ECS_Test.Systems
                     rendC.Glyph = '%';
                     rendC.Colour = RLNET.RLColor.LightRed;
 
+                    Components.AttributesComp attC = (Components.AttributesComp)_entityManager.GetSingleComponentByID(entID, Core.ComponentTypes.Attributes);
+                    attC.Dead = true;
+                    Game.MessageLog.Add($"ENT IS DEAD YEAH: {attC.Dead}   ----------------------------------------------------------------------------");
+
                     _shedSystem.Remove(_entityManager.JustEntities[entID]);
 
                     _entityManager.RemoveCompFromEnt(entID, Core.ComponentTypes.Health);
@@ -70,6 +74,7 @@ namespace ECS_Test.Systems
                     _entityManager.RemoveCompFromEnt(entID, Core.ComponentTypes.Schedulable);
 
                     _entityManager.AddFurnitureToEnt(entID);
+                    _entityManager.AddDeadComp(entID);
 
                     // drop inventory
                     Components.InventoryComp invC = (Components.InventoryComp)_entityManager.GetSingleComponentByID(entID, Core.ComponentTypes.Inventory);

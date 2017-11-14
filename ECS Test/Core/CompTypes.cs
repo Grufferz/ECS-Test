@@ -26,6 +26,7 @@ namespace ECS_Test.Core
         Actor = 32768,
         Weapon = 65536,
         Furniture = 131072,
-        Potion = 262144
+        Potion = 262144,
+        Dead = 524288
     }
 }

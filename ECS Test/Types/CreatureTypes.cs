@@ -12,6 +12,7 @@ namespace ECS_Test.Types
         Orc = 2,
         Kobold = 3,
         Troll = 4,
-        Rat = 5
+        Rat = 5,
+        Zombie = 6
     }
 }

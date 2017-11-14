@@ -11,13 +11,24 @@ namespace ECS_Test.Components
         public string Name { get; set; }
         public Types.CreatureTypes CreatureType { get; set; }
         public string PersonalName { get; set; }
+        public bool Undead { get; set; }
 
         public CreatureDetailsComp(string n, string pn, Types.CreatureTypes t)
         {
+            CompType = Core.ComponentTypes.CreatureDetails;
+
             Name = n;
             PersonalName = pn;
             CreatureType = t;
-            CompType = Core.ComponentTypes.CreatureDetails;
+            
+            if (CreatureType == Types.CreatureTypes.Zombie)
+            {
+                Undead = true;
+            }
+            else
+            {
+                Undead = false;
+            }
         }
     }
 }

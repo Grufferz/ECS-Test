@@ -15,7 +15,7 @@ namespace ECS_Test.Components
         {
             IsOpen = o;
             IsLocked = l;
-            CompType = Core.ComponentTypes.AI;
+            CompType = Core.ComponentTypes.Door;
         }
     }
 }

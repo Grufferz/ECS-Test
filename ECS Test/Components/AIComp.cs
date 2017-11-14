@@ -26,6 +26,7 @@ namespace ECS_Test.Components
         public Core.DungeonMap DMap { get; }
         public Types.AITypes AiType { get; set; }
         public Dictionary<int, RogueSharp.Point> TreasureMemory { get; set; }
+        public Dictionary<int, RogueSharp.Point> LootMemory { get; set; }
         public RogueSharp.Point HomeSpot { get; set; }
 
         public AIComp(Core.DungeonMap m, Types.AITypes aiT, RogueSharp.Point startPoint)
@@ -49,6 +50,7 @@ namespace ECS_Test.Components
 
             AiState = Core.AIStates.Wandering;
             TreasureMemory = new Dictionary<int, RogueSharp.Point>();
+            LootMemory = new Dictionary<int, RogueSharp.Point>();
         }
     }
 }

@@ -24,6 +24,10 @@ namespace ECS_Test.Components
         public int DmgMod { get; set; }
         public int Morale { get; set; }
         public int MaxMorale { get; set; }
+        public bool Dead { get; set; }
+        public bool Feasting { get; set; }
+        public int FeastingCounter { get; set; }
+        public int FeastingOn { get; set; }
 
         public AttributesComp(int a, int si, int lev, int intBase )
         {
@@ -47,6 +51,11 @@ namespace ECS_Test.Components
 
             Morale = 100;
             MaxMorale = Morale;
+
+            Dead = false;
+            Feasting = false;
+            FeastingCounter = 0;
+            FeastingOn = 0;
 
             int dmgSw = Strength + Size;
 

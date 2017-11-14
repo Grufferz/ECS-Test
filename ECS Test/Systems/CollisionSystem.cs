@@ -9,10 +9,12 @@ namespace ECS_Test.Systems
     class CollisionSystem : IBaseSystem
     {
         private EntityManager _entityManager;
+        private Core.DungeonMap _dungeonMap;
 
-        public CollisionSystem(EntityManager em)
+        public CollisionSystem(EntityManager em, Core.DungeonMap dm)
         {
             _entityManager = em;
+            _dungeonMap = dm;
             Core.EventBus.Subscribe(Core.EventTypes.CollisionCheck, (sender, e) => OnMessage(e));
         }
 
@@ -31,6 +33,7 @@ namespace ECS_Test.Systems
                     //check entity manager lookup dict
                     //string posKey = details.x.ToString() + "-" + details.y.ToString();
                     bool collision = false;
+                    bool openingDoor = false;
                     List<int> deathList = new List<int>();
 
                     //if (_entityManager.EntityPostionLookUp.ContainsKey(posKey))
@@ -49,6 +52,24 @@ namespace ECS_Test.Systems
                         if (pc.X == details.x && pc.Y == details.y)
                         {
                             int checker = _entityManager.EntityBitLookUp[ids];
+                            // is it a door?
+                            if ((checker & (int)Core.ComponentTypes.Door) > 0)
+                            {
+                                Components.DoorComp doorComp =
+                                    (Components.DoorComp)_entityManager.GetSingleComponentByID(ids, Core.ComponentTypes.Door);
+                                
+                                if (!doorComp.IsOpen)
+                                {
+                                    openingDoor = true;
+                                    doorComp.IsOpen = true;
+                                    _dungeonMap.SetCellProperties(pc.X, pc.Y, true, true);
+                                    Components.RenderComp rc = (Components.RenderComp)_entityManager.GetSingleComponentByID(ids, Core.ComponentTypes.Render);
+                                    rc.Glyph = '-';
+                                }
+                            }
+                            
+
+                            //is it something living?
                             if ((checker & (int)Core.ComponentTypes.Health) > 0)
                             {
                                 //Game.MessageLog.Add("FIGHT NOW");
@@ -59,6 +80,11 @@ namespace ECS_Test.Systems
                                     (Components.HealthComp)_entityManager.GetSingleComponentByID(ids, Core.ComponentTypes.Health);
                                 Components.AttributesComp attComp 
                                     = (Components.AttributesComp)_entityManager.GetSingleComponentByID(ids, Core.ComponentTypes.Attributes);
+
+                                Components.CreatureDetailsComp detailsComp =
+                                    (Components.CreatureDetailsComp)_entityManager.GetSingleComponentByID(ids, Core.ComponentTypes.CreatureDetails);
+                                bool isUndead = detailsComp.Undead;
+
                                 Components.AIComp aiComp = (Components.AIComp)_entityManager.GetSingleComponentByID(ids, Core.ComponentTypes.AI);
 
                                 // get hitter details
@@ -68,8 +94,9 @@ namespace ECS_Test.Systems
                                 bool hit = false;
                                 // base damage = 1
                                 int dmg = 1;
+                                int attackSkill = (int)(attComp.Strength + attComp.Dexterity) / 2;
 
-                                if (RogueSharp.DiceNotation.Dice.Roll("1d20") < attOfHitterComp.Strength)
+                                if (RogueSharp.DiceNotation.Dice.Roll("1d20") < attackSkill)
                                 {
                                     hit = true;
                                     
@@ -93,7 +120,10 @@ namespace ECS_Test.Systems
                                         }
                                     }
                                     int totalDamage = dmgBonus + dmg;
-                                    if (totalDamage <= 1){ totalDamage = 1; }
+                                    if (totalDamage <= 1)
+                                    {
+                                        totalDamage = 1;
+                                    }
                                     hComp.Health -= totalDamage;
                                     if (hComp.Health < 0)
                                     {
@@ -108,7 +138,11 @@ namespace ECS_Test.Systems
 
                                     if (hComp.Health < (hComp.MaxHealth * 0.2))
                                     {
-                                        aiComp.Fleeing = true;
+                                        if (!isUndead)
+                                        {
+                                            aiComp.Fleeing = true;
+                                        }
+                                        
                                     }
 
                                 }
@@ -158,7 +192,7 @@ namespace ECS_Test.Systems
                         Core.MoveOkayEventArgs msg = new Core.MoveOkayEventArgs(Core.EventTypes.MoveOK, details.EntRequestingMove, details.x, details.y);
                         Core.EventBus.Publish(Core.EventTypes.MoveOK, msg);
                     }
-                    else
+                    else //if (!openingDoor)
                     {
                     //    // fight on
                         Core.NoMoveEventArgs msg = new Core.NoMoveEventArgs(Core.EventTypes.NoMove, details.EntRequestingMove);
